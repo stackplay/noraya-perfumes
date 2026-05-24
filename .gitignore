@@ -1,0 +1,13 @@
+node_modules/
+build/
+.env
+.env.local
+*.backup
+*.bak
+*.backup_*
+*.bkp_*
+backup/
+backups/
+.DS_Store
+npm-debug.log*
+yarn-debug.log*

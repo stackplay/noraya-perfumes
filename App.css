@@ -1,0 +1,13 @@
+
+/* Garantir que drawers fiquem acima de tudo */
+.fixed.inset-0 {
+  z-index: 9998 !important;
+}
+
+.fixed.right-0.top-0 {
+  z-index: 9999 !important;
+}
+
+header.fixed {
+  z-index: 50 !important;
+}

@@ -1,0 +1,559 @@
+import React, { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Link, useNavigate, useParams } from "react-router-dom";
+import { ShoppingBag, ShoppingCart, User, Menu, X, Instagram, Globe, Star, Heart, Share2, Truck, Shield, RefreshCw, Minus, Plus, Check, Trash2, Package, LogOut, LogIn } from "lucide-react";
+import { toast, Toaster } from "sonner";
+import * as ptBR from "./data/content";
+import * as ptPT from "./data/content-ptpt";
+import { auth, signInWithGoogle, logout, addToCart as addToCartDB, getCart as getCartDB, updateCartQuantity, removeFromCart as removeFromCartDB, addToFavorites, removeFromFavorites, getFavorites, addReview, getProductReviews, getProductRating, markHelpful } from "./services/firebase";
+import "./App.css";
+
+const getContent = (locale) => {
+  return locale === 'pt-BR' ? ptBR : ptPT;
+};
+
+// =============================================
+// COMPONENTE HEADER
+// =============================================
+const Header = ({ locale, setLocale, content, onOpenCart, cartCount }) => {
+  const [open, setOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const { brand, nav } = content;
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(setUser);
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogin = async () => {
+    const result = await signInWithGoogle();
+    if (result.success) toast.success(`Bem-vindo, ${result.user.displayName}!`);
+    else toast.error('Erro ao fazer login');
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    toast.success('Logout realizado!');
+  };
+
+  return (
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[#0a0807]/85 backdrop-blur-md border-b border-[#c9a96a]/15">
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-12 h-20 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-3">
+          <img src={brand.logo} alt="Noraya" className="h-12 w-12 object-contain" />
+          <div className="leading-tight hidden sm:block">
+            <div className="font-display tracking-[0.25em] text-[#e8c98a] text-lg">{brand.name}</div>
+            <div className="text-[10px] tracking-[0.3em] text-[#c9a96a]/70">{brand.tagline}</div>
+          </div>
+        </Link>
+        <nav className="hidden lg:flex items-center gap-8">
+          {nav.map((item) => (
+            <a key={item.label} href={item.href} className="text-[11px] tracking-[0.28em] text-[#e8d6a8] hover:text-[#f5deb3]">{item.label}</a>
+          ))}
+        </nav>
+        <div className="flex items-center gap-4">
+          <button onClick={() => setLocale(locale === 'pt-BR' ? 'pt-PT' : 'pt-BR')} className="flex items-center gap-1 text-[#e8d6a8] text-xs">
+            <Globe size={16} /> {locale === 'pt-BR' ? 'PT-BR' : 'PT-PT'}
+          </button>
+          <button onClick={onOpenCart} className="relative text-[#e8d6a8] hover:text-[#f5deb3]">
+            <ShoppingBag size={20} />
+            {cartCount > 0 && <span className="absolute -top-2 -right-3 text-[10px] bg-[#c9a96a] text-black h-4 w-4 rounded-full flex items-center justify-center font-bold">{cartCount}</span>}
+          </button>
+          {user ? (
+            <div className="flex items-center gap-3">
+              {user.photoURL && <img src={user.photoURL} alt={user.displayName} className="w-8 h-8 rounded-full border border-[#c9a96a]" />}
+              <button onClick={handleLogout} className="text-[11px] text-[#e8d6a8] hover:text-[#f5deb3]"><LogOut size={16} /></button>
+            </div>
+          ) : (
+            <button onClick={handleLogin} className="text-[11px] text-[#e8d6a8] hover:text-[#f5deb3]"><LogIn size={16} /></button>
+          )}
+          <button className="lg:hidden text-[#e8d6a8]" onClick={() => setOpen(!open)}>{open ? <X size={22} /> : <Menu size={22} />}</button>
+        </div>
+      </div>
+      {open && (
+        <div className="lg:hidden bg-[#0a0807] border-t border-[#c9a96a]/15 px-6 py-6 flex flex-col gap-5">
+          {nav.map((item) => (<a key={item.label} href={item.href} onClick={() => setOpen(false)} className="text-[12px] tracking-[0.28em] text-[#e8d6a8]">{item.label}</a>))}
+        </div>
+      )}
+    </header>
+  );
+};
+
+// =============================================
+// COMPONENTE CARRINHO
+// =============================================
+const CartDrawer = ({ isOpen, onClose, cart, onUpdateQuantity, onRemove, getTotal }) => {
+  if (!isOpen) return null;
+  return (
+    <>
+      <div className="fixed inset-0 bg-black/70 z-[1000]" onClick={onClose} />
+      <div className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-[#0a0807] border-l border-[#c9a96a]/30 z-[1001] shadow-2xl flex flex-col">
+        <div className="p-4 border-b border-[#c9a96a]/20 flex justify-between items-center">
+          <h2 className="text-xl font-display text-[#e8c98a]">Meu Carrinho</h2>
+          <button onClick={onClose} className="text-[#c9a96a] hover:text-[#e8c98a]"><X size={24} /></button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4">
+          {cart.length === 0 ? (
+            <div className="text-center py-12"><ShoppingBag className="w-16 h-16 text-[#c9a96a]/30 mx-auto mb-4" /><p className="text-[#c9a96a]/60">Seu carrinho está vazio</p></div>
+          ) : (
+            <div className="space-y-4">{cart.map((item) => (
+              <div key={item.id} className="bg-[#1a1410] rounded-lg p-3 flex gap-3">
+                <img src={item.productImage} alt={item.productName} className="w-16 h-16 object-contain bg-[#0a0807] rounded" />
+                <div className="flex-1">
+                  <p className="text-[#e8d6a8] font-medium text-sm">{item.productName}</p>
+                  <p className="text-[#c9a96a] text-xs mt-1">{item.size}</p>
+                  <div className="flex justify-between items-center mt-2">
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => onUpdateQuantity(item.id, item.quantity, -1)} className="p-1 hover:bg-[#0a0807] rounded"><Minus size={14} className="text-[#c9a96a]" /></button>
+                      <span className="text-[#e8d6a8] text-sm w-8 text-center">{item.quantity}</span>
+                      <button onClick={() => onUpdateQuantity(item.id, item.quantity, 1)} className="p-1 hover:bg-[#0a0807] rounded"><Plus size={14} className="text-[#c9a96a]" /></button>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-[#e8c98a] font-semibold">{(item.price * item.quantity).toFixed(2)} €</span>
+                      <button onClick={() => onRemove(item.id)} className="p-1 hover:bg-red-500/20 rounded"><Trash2 size={14} className="text-red-400" /></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}</div>
+          )}
+        </div>
+        {cart.length > 0 && (
+          <div className="border-t border-[#c9a96a]/20 p-4">
+            <div className="flex justify-between items-center mb-3"><span className="text-[#e8d6a8]">Total</span><span className="text-2xl font-bold text-[#e8c98a]">{getTotal()} €</span></div>
+            <button className="w-full py-3 bg-[#c9a96a] text-black rounded-lg font-semibold hover:bg-[#e8c98a]">Finalizar Compra</button>
+          </div>
+        )}
+      </div>
+    </>
+  );
+};
+
+// =============================================
+// COMPONENTE HERO
+// =============================================
+const Hero = ({ content }) => {
+  if (!content?.hero) return null;
+  return (
+    <section id="top" className="relative min-h-screen w-full flex items-center pt-20">
+      <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${content.hero.background})` }} />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-black/30" />
+      <div className="relative z-10 max-w-[1440px] mx-auto px-6 lg:px-16 w-full">
+        <div className="max-w-2xl">
+          <p className="text-[#c9a96a] tracking-[0.4em] text-xs mb-8">{content.hero.kicker}</p>
+          <h1 className="font-display text-white text-5xl sm:text-6xl lg:text-8xl leading-[0.95] mb-2">{content.hero.titleLine1}</h1>
+          <h1 className="font-display italic text-[#e8c98a] text-5xl sm:text-6xl lg:text-8xl leading-[0.95] mb-10">{content.hero.titleItalic}</h1>
+          <p className="text-[#d9cfb8] text-base lg:text-lg max-w-md mb-12">{content.hero.description}</p>
+          <button onClick={() => document.getElementById("mais-vendidos")?.scrollIntoView({ behavior: "smooth" })} className="px-14 py-4 border border-[#c9a96a] text-[#e8c98a] tracking-[0.3em] text-xs hover:bg-[#c9a96a] hover:text-black">{content.hero.cta.toUpperCase()}</button>
+        </div>
+      </div>
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-[#c9a96a]/60 text-[10px] tracking-[0.4em]">ROLE ↓</div>
+    </section>
+  );
+};
+
+// =============================================
+// COMPONENTE PRODUCT CARD
+// =============================================
+const ProductCard = ({ p, dark = false, index, category }) => {
+  const navigate = useNavigate();
+  const [isHovered, setIsHovered] = useState(false);
+  return (
+    <div onClick={() => navigate(`/produto/${category}/${index}`)} className="group flex flex-col items-center cursor-pointer" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+      <div className={`w-full aspect-[3/4] flex items-center justify-center transition-transform duration-500 ${dark ? "bg-[#0a0807]" : "bg-[#f7f3ec]"}`}>
+        <img src={isHovered && p.hoverImage ? p.hoverImage : p.image} alt={p.name || ""} className="max-h-[90%] max-w-[90%] object-contain transition-all duration-500 group-hover:scale-105" />
+      </div>
+      {p.name && <><h3 className={`font-display text-lg lg:text-xl mt-4 mb-1 text-center ${dark ? "text-[#e8d6a8]" : "text-[#1a1410]"}`}>{p.name}</h3><p className={`text-sm tracking-wider ${dark ? "text-[#c9a96a]/70" : "text-neutral-500"}`}>{p.price}</p></>}
+    </div>
+  );
+};
+
+// =============================================
+// COMPONENTE BEST SELLERS
+// =============================================
+const BestSellers = ({ content }) => {
+  if (!content?.bestSellers) return null;
+  return (
+    <section id="mais-vendidos" className="bg-[#f7f3ec] py-28 lg:py-36">
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
+        <div className="text-center mb-20"><p className="text-neutral-500 tracking-[0.4em] text-xs mb-5">{content.bestSellers.kicker}</p><h2 className="font-display text-[#1a1410] text-5xl lg:text-6xl">{content.bestSellers.titleLine1} <span className="italic text-[#7a5a2e]">{content.bestSellers.titleItalic}</span></h2></div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 lg:gap-6 mb-16">{content.bestSellers.products?.map((p, i) => (<ProductCard key={i} p={p} />))}</div>
+        <div className="flex justify-center"><button onClick={() => toast.success("Catálogo completo em breve")} className="px-14 py-4 border border-[#1a1410] text-[#1a1410] tracking-[0.3em] text-xs hover:bg-[#1a1410] hover:text-[#e8c98a]">{content.bestSellers.cta.toUpperCase()}</button></div>
+      </div>
+    </section>
+  );
+};
+
+// =============================================
+// COMPONENTE BANNER
+// =============================================
+const Banner = ({ content }) => {
+  if (!content?.banner) return null;
+  return (
+    <section id="novidades" className="bg-[#0a0807]">
+      <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[80vh]">
+        <div className="bg-[#0a0807] flex items-center px-8 lg:px-20 py-20 lg:py-0 order-2 lg:order-1">
+          <div className="max-w-md"><p className="text-[#c9a96a] tracking-[0.4em] text-xs mb-8">{content.banner.kicker}</p><h2 className="font-display text-white text-5xl lg:text-7xl leading-[1] mb-2">{content.banner.titleLine1} <span className="italic text-[#e8c98a]">{content.banner.titleItalic}</span></h2><h2 className="font-display text-white text-5xl lg:text-7xl leading-[1] mb-10">{content.banner.titleLine2}</h2><p className="text-[#d9cfb8] text-base mb-12">{content.banner.description}</p><button onClick={() => toast.success("Adicionado à wishlist")} className="bg-[#c9a96a] text-black px-14 py-4 tracking-[0.3em] text-xs hover:bg-[#e8c98a]">{content.banner.cta.toUpperCase()}</button></div>
+        </div>
+        <div className="relative min-h-[60vh] lg:min-h-[80vh] bg-cover bg-center order-1 lg:order-2" style={{ backgroundImage: `url(${content.banner.image})` }} />
+      </div>
+    </section>
+  );
+};
+
+// =============================================
+// COMPONENTE CATEGORY SECTION
+// =============================================
+const CategorySection = ({ id, data, dark = false }) => {
+  if (!data?.products) return null;
+  return (
+    <section id={id} className={`${dark ? "bg-[#0a0807]" : "bg-white"} py-24 lg:py-32`}>
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
+        <div className="text-center mb-16"><p className={`tracking-[0.4em] text-xs mb-5 ${dark ? "text-[#c9a96a]" : "text-neutral-500"}`}>{data.kicker}</p><h2 className={`font-display text-5xl lg:text-6xl mb-4 ${dark ? "text-white" : "text-[#1a1410]"}`}>{data.titleLine1} <span className={`italic ${dark ? "text-[#e8c98a]" : "text-[#7a5a2e]"}`}>{data.titleItalic}</span></h2>{data.description && <p className={`max-w-xl mx-auto font-light ${dark ? "text-[#d9cfb8]" : "text-neutral-600"}`}>{data.description}</p>}</div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8 lg:gap-6">{data.products.map((p, i) => (<ProductCard key={i} p={p} dark={dark} index={i} category={id} />))}</div>
+      </div>
+    </section>
+  );
+};
+
+// =============================================
+// COMPONENTE TRENDS
+// =============================================
+const Trends = ({ content }) => {
+  if (!content?.trends) return null;
+  return (
+    <section id="tudo" className="bg-[#f7f3ec] py-28 lg:py-36">
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
+        <div className="text-center mb-20"><p className="text-neutral-500 tracking-[0.4em] text-xs mb-5">{content.trends.kicker}</p><h2 className="font-display text-[#1a1410] text-5xl lg:text-6xl">{content.trends.titleLine1} <span className="italic text-[#7a5a2e]">{content.trends.titleItalic}</span></h2></div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 lg:gap-6">{content.trends.products?.map((p, i) => (<ProductCard key={i} p={p} />))}</div>
+      </div>
+    </section>
+  );
+};
+
+// =============================================
+// COMPONENTE FOLLOW
+// =============================================
+const Follow = ({ content }) => {
+  if (!content?.follow) return null;
+  return (
+    <section className="bg-[#1a1410] py-24 lg:py-28">
+      <div className="text-center mb-14 px-6"><h3 className="font-display text-white text-4xl lg:text-5xl mb-3">{content.follow.kicker}<span className="italic text-[#e8c98a]">nos</span></h3><a href="https://instagram.com" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-[#c9a96a] tracking-[0.3em] text-sm hover:text-[#e8c98a]"><Instagram size={16} /> {content.follow.handle}</a></div>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-0">{content.follow.gallery?.map((src, i) => (<div key={i} className="aspect-square"><img src={src} alt="" className="w-full h-full object-cover transition-transform duration-700 hover:scale-110" /></div>))}</div>
+    </section>
+  );
+};
+
+// =============================================
+// COMPONENTE NEWSLETTER
+// =============================================
+const Newsletter = ({ content }) => {
+  const [email, setEmail] = useState("");
+  const submit = (e) => { e.preventDefault(); if (!email) { toast.error("Informe seu e-mail"); return; } toast.success("Inscrição realizada!"); setEmail(""); };
+  if (!content?.newsletter) return null;
+  return (
+    <section className="bg-[#0a0807] py-28 lg:py-36 text-center">
+      <div className="max-w-2xl mx-auto px-6"><h2 className="font-display text-white text-5xl lg:text-7xl leading-[1.05] mb-10">{content.newsletter.titleLine1} <span className="italic text-[#e8c98a]">{content.newsletter.titleItalic}</span></h2><p className="text-[#d9cfb8] mb-12">{content.newsletter.description}</p>
+        <form onSubmit={submit} className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto"><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={content.newsletter.placeholder} className="flex-1 bg-transparent border border-[#c9a96a]/50 text-white placeholder:text-[#c9a96a]/60 px-5 py-4 focus:outline-none focus:border-[#e8c98a]" /><button type="submit" className="bg-[#c9a96a] text-black px-10 py-4 tracking-[0.3em] text-xs hover:bg-[#e8c98a]">{content.newsletter.cta.toUpperCase()}</button></form>
+      </div>
+    </section>
+  );
+};
+
+// =============================================
+// COMPONENTE FOOTER
+// =============================================
+const Footer = ({ content }) => {
+  if (!content?.footer) return null;
+  return (
+    <footer className="bg-[#050403] text-[#c9a96a]/80 py-20 border-t border-[#c9a96a]/15">
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-14"><div><img src={content.brand.logo} alt="Noraya" className="h-20 w-20 object-contain mb-4" /><div className="font-display tracking-[0.25em] text-[#e8c98a] text-xl">{content.brand.name}</div><div className="text-[10px] tracking-[0.3em] text-[#c9a96a]/60 mt-1">{content.brand.tagline}</div></div>{content.footer.columns?.map((c) => (<div key={c.title}><h4 className="text-[#e8c98a] tracking-[0.3em] text-xs mb-5">{c.title}</h4><ul className="space-y-3 text-sm font-light">{c.links.map((l) => (<li key={l}><a href="#" className="hover:text-[#e8c98a]">{l}</a></li>))}</ul></div>))}</div>
+        <div className="pt-8 border-t border-[#c9a96a]/15 text-xs text-center tracking-wider">{content.footer.copyright}</div>
+      </div>
+    </footer>
+  );
+};
+
+// =============================================
+// COMPONENTE PRODUCT DETAIL
+// =============================================
+const ProductDetail = () => {
+  const { category, id } = useParams();
+  const navigate = useNavigate();
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [user, setUser] = useState(null);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [averageRating, setAverageRating] = useState(0);
+  const [totalReviews, setTotalReviews] = useState(0);
+  const content = getContent('pt-BR');
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(setUser);
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const fetchProduct = () => {
+      setLoading(true);
+      try {
+        const productIndex = parseInt(id);
+        let productsList = [];
+        let categoryName = '';
+        
+        if (category === 'femininos') {
+          productsList = content.feminine?.products || [];
+          categoryName = 'femininos';
+        } else if (category === 'masculinos') {
+          productsList = content.masculine?.products || [];
+          categoryName = 'masculinos';
+        } else {
+          if (content.masculine?.products[productIndex]) {
+            productsList = content.masculine.products;
+            categoryName = 'masculinos';
+          } else if (content.feminine?.products[productIndex]) {
+            productsList = content.feminine.products;
+            categoryName = 'femininos';
+          }
+        }
+        
+        if (productsList && productsList[productIndex]) {
+          const foundProduct = { ...productsList[productIndex] };
+          let priceValue = 0;
+          if (foundProduct.price) {
+            priceValue = parseFloat(foundProduct.price.replace('€', '').replace(',', '.').trim());
+          }
+          const enhancedProduct = {
+            ...foundProduct,
+            id: productIndex,
+            priceValue,
+            images: [foundProduct.image, foundProduct.hoverImage || foundProduct.image],
+            category: categoryName,
+            sizes: foundProduct.sizes || [{ size: "100ml", price: priceValue }]
+          };
+          setProduct(enhancedProduct);
+          if (enhancedProduct.sizes[0]) setSelectedSize(enhancedProduct.sizes[0].size);
+        } else setProduct(null);
+        setLoading(false);
+      } catch (error) {
+        console.error('Erro:', error);
+        setLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [id, category, content]);
+
+  useEffect(() => {
+    const loadReviews = async () => {
+      if (!product) return;
+      const result = await getProductReviews(id);
+      if (result.success) setReviews(result.reviews);
+      const ratingResult = await getProductRating(id);
+      if (ratingResult.success) {
+        setAverageRating(ratingResult.average);
+        setTotalReviews(ratingResult.total);
+      }
+    };
+    loadReviews();
+  }, [id, product]);
+
+  useEffect(() => {
+    const checkFavorite = async () => {
+      if (user && product) {
+        try {
+          const q = query(collection(db, "favorites"), where("userId", "==", user.uid), where("productId", "==", String(product.id)));
+          const querySnapshot = await getDocs(q);
+          setIsFavorite(!querySnapshot.empty);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    };
+    checkFavorite();
+  }, [user, product]);
+
+  const handleAddToCart = async () => {
+    if (!user) return toast.error('Faça login para comprar');
+    const size = selectedSize || '100ml';
+    const price = product.sizes.find(s => s.size === selectedSize)?.price || product.priceValue;
+    const result = await addToCartDB(user.uid, product.id, product.name, product.image, price, size, quantity);
+    if (result.success) toast.success(`${quantity}x ${product.name} adicionado ao carrinho`);
+    else toast.error('Erro ao adicionar');
+  };
+
+  const handleToggleFavorite = async () => {
+    if (!user) return toast.error('Faça login para favoritar');
+    if (isFavorite) {
+      await removeFromFavorites(user.uid, product.id);
+      setIsFavorite(false);
+      toast.success('Removido dos favoritos');
+    } else {
+      await addToFavorites(user.uid, product.id, product.name, product.image);
+      setIsFavorite(true);
+      toast.success('Adicionado aos favoritos');
+    }
+  };
+
+  if (loading) return <div className="min-h-screen bg-[#f7f3ec] flex items-center justify-center pt-20"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#c9a96a]"></div></div>;
+  if (!product) return <div className="min-h-screen bg-[#f7f3ec] flex items-center justify-center pt-20"><p>Produto não encontrado</p><button onClick={() => navigate('/')} className="mt-4 px-6 py-2 bg-[#c9a96a] text-white rounded-lg">Voltar</button></div>;
+
+  const currentPrice = product.sizes.find(s => s.size === selectedSize)?.price || product.priceValue;
+
+  return (
+    <div className="bg-[#f7f3ec] min-h-screen pb-16 pt-24">
+      <div className="bg-white border-b border-[#c9a96a]/15 sticky top-20 z-20">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center gap-2 text-sm text-[#1a1410]/60">
+            <Link to="/" className="hover:text-[#c9a96a]">Home</Link><span>/</span>
+            <Link to={`/#${product.category}`} className="hover:text-[#c9a96a]">{product.category === 'femininos' ? 'Para Ela' : 'Para Ele'}</Link><span>/</span>
+            <span className="text-[#c9a96a] truncate">{product.name}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="bg-white rounded-2xl shadow-sm">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 lg:p-8">
+            <div>
+              <div className="aspect-square bg-[#f7f3ec] rounded-xl relative">
+                {product.brandLogo && <div className="absolute top-4 left-4 z-10 bg-white/80 backdrop-blur-sm rounded-lg p-2"><img src={product.brandLogo} alt="Lattafa" className="h-8 w-auto" /></div>}
+                <img src={product.image} alt={product.name} className="w-full h-full object-contain hover:scale-105 transition-transform" />
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div><p className="text-sm text-[#c9a96a] font-semibold">{product.brand || 'LATTAFA'}</p><h1 className="text-2xl lg:text-3xl font-display font-bold text-[#1a1410]">{product.name}</h1></div>
+              <div className="flex items-center gap-3"><div className="flex gap-1">{[...Array(5)].map((_, i) => (<Star key={i} size={16} className={i < averageRating ? 'fill-[#c9a96a] text-[#c9a96a]' : 'text-gray-300'} />))}</div><span>({totalReviews} avaliações)</span></div>
+              <div><span className="text-3xl font-bold text-[#1a1410]">{currentPrice.toFixed(2)} €</span><p className="text-sm text-[#1a1410]/50">IVA incluído</p></div>
+              
+              <div><label className="block text-sm font-medium mb-2">TAMANHO</label><div className="flex gap-3 flex-wrap">{product.sizes.map((size) => (<button key={size.size} onClick={() => setSelectedSize(size.size)} className={`px-4 py-2 rounded-lg border-2 ${selectedSize === size.size ? 'border-[#c9a96a] bg-[#f7f3ec] text-[#c9a96a] font-semibold' : 'border-gray-300'}`}>{size.size} - {size.price.toFixed(2)} €</button>))}</div></div>
+              
+              <div className="flex gap-3"><div className="flex items-center border border-gray-300 rounded-lg"><button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-4 py-2"><Minus size={14} /></button><span className="w-12 text-center">{quantity}</span><button onClick={() => setQuantity(quantity + 1)} className="px-4 py-2"><Plus size={14} /></button></div><button onClick={handleAddToCart} className="flex-1 bg-[#c9a96a] text-black py-3 rounded-lg font-semibold hover:bg-[#e8c98a] flex items-center justify-center gap-2"><ShoppingCart size={18} /> COMPRAR</button></div>
+              
+              <button onClick={handleToggleFavorite} className={`w-full py-3 rounded-lg border-2 flex items-center justify-center gap-2 ${isFavorite ? 'border-red-400 bg-red-50 text-red-500' : 'border-gray-300'}`}><Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500' : ''}`} />{isFavorite ? 'Favoritado' : 'Favoritar'}</button>
+              
+              <div className="border-t pt-6 space-y-3"><div className="flex items-center gap-3 text-sm"><Truck className="w-5 h-5 text-[#c9a96a]" />Frete grátis acima de 50€</div><div className="flex items-center gap-3 text-sm"><Shield className="w-5 h-5 text-[#c9a96a]" />Produto original</div><div className="flex items-center gap-3 text-sm"><RefreshCw className="w-5 h-5 text-[#c9a96a]" />Devolução gratuita</div></div>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-200 p-6 lg:p-8">
+            <h2 className="text-xl font-display font-bold mb-4">Descrição</h2>
+            <div className="text-[#1a1410]/80 leading-relaxed mb-6">{product.fullDescription || product.description}</div>
+          </div>
+
+          <div className="border-t border-gray-200 p-6 lg:p-8">
+            <h3 className="text-xl font-display font-bold text-[#1a1410] mb-4">Avaliações ({totalReviews})</h3>
+            {user ? (
+              <form className="mb-8 p-4 bg-[#f7f3ec] rounded-lg">
+                <h4 className="font-semibold text-[#1a1410] mb-3">Avalie este produto</h4>
+                <div className="flex gap-1 mb-3">{[...Array(5)].map((_, i) => (<Star key={i} size={24} className="cursor-pointer text-gray-400" />))}</div>
+                <textarea placeholder="Sua experiência com este perfume..." className="w-full p-3 border border-gray-300 rounded-lg mb-3" rows="3" />
+                <button className="bg-[#c9a96a] text-black px-6 py-2 rounded-lg">Publicar</button>
+              </form>
+            ) : (
+              <div className="mb-8 p-4 bg-[#f7f3ec] rounded-lg text-center"><p>Faça login para avaliar</p></div>
+            )}
+            {reviews.map((review) => (
+              <div key={review.id} className="border-b border-gray-200 pb-4 mb-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-full bg-[#c9a96a]/20 flex items-center justify-center"><User size={20} className="text-[#c9a96a]" /></div>
+                  <div><p className="font-semibold">{review.userName}</p><div className="flex gap-1">{[...Array(5)].map((_, i) => (<Star key={i} size={14} className={i < review.rating ? 'fill-[#c9a96a]' : 'text-gray-300'} />))}</div></div>
+                </div>
+                <p className="text-[#1a1410]/80">{review.comment}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// =============================================
+// HOME PAGE
+// =============================================
+const HomePage = ({ content, locale, setLocale }) => {
+  const [cartOpen, setCartOpen] = useState(false);
+  const [cart, setCart] = useState([]);
+  const [cartCount, setCartCount] = useState(0);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      setUser(user);
+      if (user) {
+        const result = await getCartDB(user.uid);
+        if (result.success) {
+          setCart(result.cart);
+          setCartCount(result.cart.reduce((total, item) => total + item.quantity, 0));
+        }
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleUpdateQuantity = async (cartId, currentQuantity, delta) => {
+    const newQuantity = currentQuantity + delta;
+    if (newQuantity < 1) return;
+    const result = await updateCartQuantity(cartId, newQuantity);
+    if (result.success) {
+      setCart(cart.map(item => item.id === cartId ? { ...item, quantity: newQuantity } : item));
+      setCartCount(cartCount + delta);
+    }
+  };
+
+  const handleRemoveFromCart = async (cartId) => {
+    const result = await removeFromCartDB(cartId);
+    if (result.success) {
+      const removedItem = cart.find(item => item.id === cartId);
+      setCart(cart.filter(item => item.id !== cartId));
+      setCartCount(cartCount - (removedItem?.quantity || 0));
+      toast.success('Item removido');
+    }
+  };
+
+  const getCartTotal = () => {
+    return cart.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2);
+  };
+
+  return (
+    <>
+      <Header locale={locale} setLocale={setLocale} content={content} onOpenCart={() => setCartOpen(true)} cartCount={cartCount} />
+      <Hero content={content} />
+      <BestSellers content={content} />
+      <Banner content={content} />
+      <CategorySection id="femininos" data={content.feminine} dark={false} />
+      <CategorySection id="masculinos" data={content.masculine} dark={true} />
+      <Trends content={content} />
+      <Follow content={content} />
+      <Newsletter content={content} />
+      <Footer content={content} />
+      <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} cart={cart} onUpdateQuantity={handleUpdateQuantity} onRemove={handleRemoveFromCart} getTotal={getCartTotal} />
+    </>
+  );
+};
+
+// =============================================
+// APP PRINCIPAL
+// =============================================
+function App() {
+  const [locale, setLocale] = useState('pt-BR');
+  const content = getContent(locale);
+  
+  return (
+    <div className="bg-[#0a0807] min-h-screen">
+      <Toaster position="bottom-right" toastOptions={{ style: { background: "#1a1410", color: "#e8c98a", border: "1px solid rgba(201,169,106,0.3)" } }} />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<HomePage content={content} locale={locale} setLocale={setLocale} />} />
+          <Route path="/produto/:category/:id" element={<ProductDetail />} />
+        </Routes>
+      </BrowserRouter>
+    </div>
+  );
+}
+
+export default App;

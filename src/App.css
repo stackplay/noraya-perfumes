@@ -1,0 +1,10 @@
+/* App-specific overrides handled inline via Tailwind utilities. */
+
+/* Garantir que os drawers fiquem acima de tudo */
+.fixed.inset-0 {
+  z-index: 9999 !important;
+}
+
+.fixed.right-0.top-0 {
+  z-index: 10000 !important;
+}
