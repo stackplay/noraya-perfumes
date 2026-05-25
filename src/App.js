@@ -1145,7 +1145,7 @@ const HomePage = () => {
 // APP PRINCIPAL
 // =============================================
 function App() {
-  const [locale, setLocale] = useState('pt-PT'); // ALTERADO para pt-PT
+  const [locale, setLocale] = useState('pt-PT');
   const content = getContent(locale);
   const [user, setUser] = useState(null);
   const [cart, setCart] = useState([]);
@@ -1170,6 +1170,7 @@ function App() {
   const kitPrice = getKitPrice();
   const kitCount = selectedPerfumes.length;
 
+  // Carrega o carrinho quando o usuário muda
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       setUser(user);
@@ -1188,10 +1189,18 @@ function App() {
     return () => unsubscribe();
   }, []);
 
+  // Recarrega o carrinho quando a moeda muda (importante!)
+  useEffect(() => {
+    if (user) {
+      loadCart(user.uid);
+    }
+  }, [locale]);
+
   const loadCart = async (userId) => {
     const cartResult = await getCartDB(userId);
     if (cartResult.success) {
       let cartData = cartResult.cart;
+      // Converte os preços se estiver em Real
       if (locale === 'pt-BR') {
         cartData = cartData.map(item => ({
           ...item,
@@ -1249,10 +1258,8 @@ function App() {
   const addToCart = async (product, price, size, quantity) => {
     if (!user) return;
     
+    // O preço vem em Euro (do content-ptpt.js)
     let priceInEuro = price;
-    if (locale === 'pt-BR') {
-      priceInEuro = price / EUR_TO_BRL;
-    }
     
     const result = await addToCartDB(user.uid, product.id, product.name, product.image, priceInEuro, size, quantity);
     if (result.success) {
@@ -1292,21 +1299,17 @@ function App() {
     }
     
     try {
-      const result = await removeFromCartDB(cartId);
+      const cartRef = doc(db, "cart", cartId);
+      await deleteDoc(cartRef);
       
-      if (result && result.success) {
-        const removedItem = cart.find(item => item.id === cartId);
-        
-        setCart(prevCart => prevCart.filter(item => item.id !== cartId));
-        
-        if (removedItem) {
-          setCartCount(prevCount => prevCount - (removedItem.quantity || 0));
-        }
-        
-        toast.success('Item removido do carrinho');
-      } else {
-        toast.error(result?.error || 'Erro ao remover item');
+      const removedItem = cart.find(item => item.id === cartId);
+      setCart(prevCart => prevCart.filter(item => item.id !== cartId));
+      
+      if (removedItem) {
+        setCartCount(prevCount => prevCount - (removedItem.quantity || 0));
       }
+      
+      toast.success('Item removido do carrinho');
     } catch (error) {
       console.error('Erro detalhado ao remover item:', error);
       toast.error('Erro ao remover item');
@@ -1360,18 +1363,32 @@ function App() {
       await setDoc(docRef, favoriteData);
       await loadFavorites(user.uid);
       toast.success('Adicionado aos favoritos');
-    } catch (error) { toast.error('Erro ao adicionar aos favoritos'); }
+    } catch (error) { 
+      console.error(error);
+      toast.error('Erro ao adicionar aos favoritos'); 
+    }
   };
 
   const removeFromFavoritesGlobal = async (productId) => {
     if (!user) return;
     try {
-      const q = query(collection(db, "favorites"), where("userId", "==", user.uid), where("productId", "==", String(productId)));
+      const q = query(
+        collection(db, "favorites"), 
+        where("userId", "==", user.uid), 
+        where("productId", "==", String(productId))
+      );
       const querySnapshot = await getDocs(q);
-      for (const doc of querySnapshot.docs) await deleteDoc(doc.ref);
+      
+      for (const docSnapshot of querySnapshot.docs) {
+        await deleteDoc(docSnapshot.ref);
+      }
+      
       await loadFavorites(user.uid);
       toast.success('Removido dos favoritos');
-    } catch (error) { toast.error('Erro ao remover dos favoritos'); }
+    } catch (error) { 
+      console.error('Erro ao remover dos favoritos:', error);
+      toast.error('Erro ao remover dos favoritos'); 
+    }
   };
 
   const addToKit = (product) => {
