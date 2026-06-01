@@ -1,32 +1,23 @@
 import React, { useState, useEffect, createContext, useContext } from "react";
 import { BrowserRouter, Routes, Route, Link, useNavigate, useParams } from "react-router-dom";
-import { ShoppingBag, ShoppingCart, User, Menu, X, Instagram, Globe, Star, Heart, Truck, Shield, RefreshCw, Minus, Plus, Trash2, Package, LogOut, LogIn } from "lucide-react";
+import { ShoppingBag, ShoppingCart, User, Menu, X, Instagram, Star, Heart, Truck, Shield, RefreshCw, Minus, Plus, Trash2, LogOut, LogIn } from "lucide-react";
 import { toast, Toaster } from "sonner";
-import * as ptBR from "./data/content";
-import * as ptPT from "./data/content-ptpt";
+import * as content from "./data/content-ptpt";
 import { auth, signInWithGoogle, logout, addToCart as addToCartDB, getCart as getCartDB, updateCartQuantity as updateCartQuantityDB, removeFromCart as removeFromCartDB, addReview, getProductReviews, getProductRating, markHelpful, db } from "./services/firebase";
 import { collection, query, where, getDocs, doc, setDoc, deleteDoc } from "firebase/firestore";
 import "./App.css";
-
-const getContent = (locale) => {
-  return locale === 'pt-BR' ? ptBR : ptPT;
-};
 
 const AppContext = createContext();
 export const useApp = () => useContext(AppContext);
 
 const WHATSAPP_NUMBER = "351920827969";
-const EUR_TO_BRL = 5.50;
 
 // =============================================
 // MODAL DE ESCOLHA DO KIT
 // =============================================
 const KitChoiceModal = ({ isOpen, onClose, onSelectKit, selectedSize }) => {
-  const { locale } = useApp();
-  
   const getKitPrice = (kitType) => {
-    const priceEur = kitType === '3ml' ? 24.99 : 49.99;
-    return locale === 'pt-BR' ? (priceEur * EUR_TO_BRL).toFixed(2) : priceEur.toFixed(2);
+    return kitType === '3ml' ? '24.99' : '49.99';
   };
   
   if (!isOpen) return null;
@@ -57,13 +48,13 @@ const KitChoiceModal = ({ isOpen, onClose, onSelectKit, selectedSize }) => {
               <button onClick={() => handleSelectKit('3ml')} className={`group bg-[#1a1410] border-2 rounded-xl p-5 text-center transition-all duration-300 ${selectedSize === '3ml' ? 'border-[#c9a96a] hover:bg-[#2a2018]' : 'border-[#c9a96a]/30 opacity-50 cursor-not-allowed'}`} disabled={selectedSize !== '3ml'}>
                 <img src="/images/decant.png" alt="Kit 3ml" className="w-24 h-24 object-contain mx-auto mb-3 group-hover:scale-110 transition-transform" />
                 <p className="text-[#e8c98a] font-bold text-xl mb-1">Kit 3ml</p>
-                <p className="text-[#c9a96a] text-2xl font-bold mb-1">{getKitPrice('3ml')} {locale === 'pt-BR' ? 'R$' : '€'}</p>
+                <p className="text-[#c9a96a] text-2xl font-bold mb-1">{getKitPrice('3ml')} €</p>
                 <p className="text-[#c9a96a]/60 text-xs">10 decants de 3ml</p>
               </button>
               <button onClick={() => handleSelectKit('5ml')} className={`group bg-[#1a1410] border-2 rounded-xl p-5 text-center transition-all duration-300 ${selectedSize === '5ml' ? 'border-[#c9a96a] hover:bg-[#2a2018]' : 'border-[#c9a96a]/30 opacity-50 cursor-not-allowed'}`} disabled={selectedSize !== '5ml'}>
                 <img src="/images/decant1.png" alt="Kit 5ml" className="w-24 h-24 object-contain mx-auto mb-3 group-hover:scale-110 transition-transform" />
                 <p className="text-[#e8c98a] font-bold text-xl mb-1">Kit 5ml</p>
-                <p className="text-[#c9a96a] text-2xl font-bold mb-1">{getKitPrice('5ml')} {locale === 'pt-BR' ? 'R$' : '€'}</p>
+                <p className="text-[#c9a96a] text-2xl font-bold mb-1">{getKitPrice('5ml')} €</p>
                 <p className="text-[#c9a96a]/60 text-xs">10 decants de 5ml</p>
               </button>
             </div>
@@ -75,11 +66,11 @@ const KitChoiceModal = ({ isOpen, onClose, onSelectKit, selectedSize }) => {
 };
 
 // =============================================
-// HEADER
+// HEADER (SEM BOTÃO DE TROCA DE MOEDA)
 // =============================================
 const Header = () => {
   const [open, setOpen] = useState(false);
-  const { locale, setLocale, content, cartCount, openCart, kitCount, openKit, user, handleLogin, handleLogout, favoritesCount } = useApp();
+  const { cartCount, openCart, kitCount, openKit, user, handleLogin, handleLogout, favoritesCount } = useApp();
   const navigate = useNavigate();
   const { brand, nav } = content;
 
@@ -99,9 +90,6 @@ const Header = () => {
           ))}
         </nav>
         <div className="flex items-center gap-4">
-          <button onClick={() => setLocale(locale === 'pt-BR' ? 'pt-PT' : 'pt-BR')} className="flex items-center gap-1 text-[#e8d6a8] text-xs">
-            <Globe size={16} /> {locale === 'pt-BR' ? 'PT-BR' : 'PT-PT'}
-          </button>
           <button onClick={openKit} className="relative flex items-center gap-2 bg-[#c9a96a]/10 hover:bg-[#c9a96a]/20 text-[#e8c98a] px-3 py-1.5 rounded-full">
             <img src="/images/decant.png" alt="Kit" className="w-5 h-5 object-contain" />
             <span className="text-xs hidden sm:inline">Kit</span>
@@ -166,7 +154,7 @@ const Header = () => {
 // CARRINHO DRAWER
 // =============================================
 const CartDrawer = () => {
-  const { isCartOpen, closeCart, cart, handleUpdateQuantity, handleRemoveFromCart, getCartTotal, user, getCartItemsForWhatsApp, handleLogin, locale } = useApp();
+  const { isCartOpen, closeCart, cart, handleUpdateQuantity, handleRemoveFromCart, getCartTotal, user, getCartItemsForWhatsApp, handleLogin } = useApp();
   
   const handleCheckout = () => {
     if (!user) {
@@ -182,8 +170,6 @@ const CartDrawer = () => {
     window.open(whatsappUrl, '_blank');
     toast.success('Redirecionando para o WhatsApp...');
   };
-  
-  const currencySymbol = locale === 'pt-BR' ? 'R$' : '€';
   
   if (!isCartOpen) return null;
   return (
@@ -232,7 +218,7 @@ const CartDrawer = () => {
                         </button>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-[#e8c98a] font-semibold">{currencySymbol} {(item.price * item.quantity).toFixed(2)}</span>
+                        <span className="text-[#e8c98a] font-semibold">€ {(item.price * item.quantity).toFixed(2)}</span>
                         <button 
                           onClick={() => handleRemoveFromCart(item.id)} 
                           className="p-1 hover:bg-red-500/20 rounded transition-colors"
@@ -251,7 +237,7 @@ const CartDrawer = () => {
           <div className="border-t border-[#c9a96a]/20 p-4">
             <div className="flex justify-between items-center mb-3">
               <span className="text-[#e8d6a8]">Total</span>
-              <span className="text-2xl font-bold text-[#e8c98a]">{currencySymbol} {getCartTotal()}</span>
+              <span className="text-2xl font-bold text-[#e8c98a]">€ {getCartTotal()}</span>
             </div>
             <button onClick={handleCheckout} className="w-full py-3 bg-gradient-to-r from-[#c9a96a] to-[#e8c98a] text-black rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2">
               Finalizar no WhatsApp
@@ -267,7 +253,7 @@ const CartDrawer = () => {
 // KIT DRAWER
 // =============================================
 const KitDrawer = () => {
-  const { isKitOpen, closeKit, selectedKit, selectedPerfumes, removeFromKit, clearKit, resetKit, kitPrice, user, sendKitToWhatsApp, handleLogin, locale } = useApp();
+  const { isKitOpen, closeKit, selectedKit, selectedPerfumes, removeFromKit, clearKit, resetKit, kitPrice, user, sendKitToWhatsApp, handleLogin } = useApp();
   
   const handleFinalizeKit = () => {
     if (!user) {
@@ -281,8 +267,6 @@ const KitDrawer = () => {
     }
     sendKitToWhatsApp();
   };
-  
-  const currencySymbol = locale === 'pt-BR' ? 'R$' : '€';
   
   if (!isKitOpen) return null;
   return (
@@ -337,7 +321,7 @@ const KitDrawer = () => {
         </div>
         {selectedKit && selectedPerfumes.length === 10 && (
           <div className="border-t border-[#c9a96a]/20 p-4 bg-gradient-to-t from-[#0a0807] to-transparent">
-            <div className="flex justify-between items-center mb-3"><span className="text-[#e8d6a8]">Total do Kit</span><span className="text-2xl font-bold text-[#e8c98a]">{currencySymbol} {kitPrice}</span></div>
+            <div className="flex justify-between items-center mb-3"><span className="text-[#e8d6a8]">Total do Kit</span><span className="text-2xl font-bold text-[#e8c98a]">€ {kitPrice}</span></div>
             <button onClick={handleFinalizeKit} className="w-full py-3 bg-gradient-to-r from-[#c9a96a] to-[#e8c98a] text-black rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2">
               Finalizar Kit no WhatsApp
             </button>
@@ -352,7 +336,7 @@ const KitDrawer = () => {
 // PAGINA DE FAVORITOS
 // =============================================
 const FavoritesPage = () => {
-  const { user, favorites, removeFromFavoritesGlobal, content, handleLogin } = useApp();
+  const { user, favorites, removeFromFavoritesGlobal, handleLogin } = useApp();
   const navigate = useNavigate();
   
   const findProductByName = (productName) => {
@@ -443,7 +427,7 @@ const FavoritesPage = () => {
 // PAGINA DE MINHAS AVALIACOES
 // =============================================
 const MyReviewsPage = () => {
-  const { user, userReviews, content, handleLogin } = useApp();
+  const { user, userReviews, handleLogin } = useApp();
   const navigate = useNavigate();
   
   const findProductByName = (productName) => {
@@ -516,7 +500,7 @@ const MyReviewsPage = () => {
                       <div className="flex gap-1">
                         {[1,2,3,4,5].map((i) => (<Star key={i} size={16} className={i <= review.rating ? 'fill-[#c9a96a] text-[#c9a96a]' : 'text-gray-300'} />))}
                       </div>
-                      <span className="text-xs text-[#1a1410]/40">{new Date(review.createdAt).toLocaleDateString('pt-BR')}</span>
+                      <span className="text-xs text-[#1a1410]/40">{new Date(review.createdAt).toLocaleDateString('pt-PT')}</span>
                     </div>
                     <p className="text-[#1a1410]/80 mb-3">{review.comment}</p>
                     <button onClick={() => handleProductClick(review)} className="text-sm text-[#c9a96a] hover:underline">Ver produto →</button>
@@ -540,7 +524,6 @@ const MyReviewsPage = () => {
 const ProductDetail = () => {
   const { category, id } = useParams();
   const navigate = useNavigate();
-  const { locale } = useApp();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -554,11 +537,11 @@ const ProductDetail = () => {
   const [hoverRating, setHoverRating] = useState(0);
   const [mainImage, setMainImage] = useState('');
   const [showKitModal, setShowKitModal] = useState(false);
-  const { content, user, addToCart, addToKit, selectedKit, setSelectedKit, addToFavoritesGlobal, removeFromFavoritesGlobal, loadUserReviews, handleLogin } = useApp();
+  const { user, addToCart, addToKit, selectedKit, setSelectedKit, addToFavoritesGlobal, removeFromFavoritesGlobal, loadUserReviews, handleLogin } = useApp();
 
   const extractPriceValue = (priceStr) => {
     if (!priceStr) return 0;
-    const numericStr = priceStr.toString().replace(/[R$\s€]/g, '').replace(',', '.').trim();
+    const numericStr = priceStr.toString().replace(/[€]/g, '').replace(',', '.').trim();
     return parseFloat(numericStr);
   };
 
@@ -617,7 +600,7 @@ const ProductDetail = () => {
       }
     };
     fetchProduct();
-  }, [id, category, content]);
+  }, [id, category]);
 
   useEffect(() => {
     const loadReviews = async () => {
@@ -748,7 +731,6 @@ const ProductDetail = () => {
 
   const isDecant = selectedSize === '3ml' || selectedSize === '5ml';
   const fixedPrice100ml = product.priceValue || 0;
-  const currencySymbol = locale === 'pt-BR' ? 'R$' : '€';
 
   return (
     <div className="bg-[#f7f3ec] min-h-screen pb-16 pt-24">
@@ -801,7 +783,7 @@ const ProductDetail = () => {
                     onClick={() => setSelectedSize('100ml')} 
                     className={`px-5 py-2.5 rounded-lg border-2 transition-all ${selectedSize === '100ml' ? 'border-[#c9a96a] bg-[#f7f3ec] text-[#c9a96a] font-semibold shadow-md' : 'border-gray-300 hover:border-[#c9a96a]/50'}`}
                   >
-                    100ml - {fixedPrice100ml.toFixed(2)} {currencySymbol}
+                    100ml - {fixedPrice100ml.toFixed(2)} €
                   </button>
                   <button 
                     onClick={() => setSelectedSize('3ml')} 
@@ -820,7 +802,7 @@ const ProductDetail = () => {
               
               <div className="border-t border-gray-100 pt-4">
                 <span className="text-3xl font-bold text-[#1a1410]">
-                  {fixedPrice100ml.toFixed(2)} {currencySymbol}
+                  {fixedPrice100ml.toFixed(2)} €
                 </span>
                 <p className="text-sm text-[#1a1410]/50 mt-1">IVA incluído - Frasco 100ml</p>
               </div>
@@ -918,7 +900,6 @@ const ProductDetail = () => {
 const ProductCard = ({ p, dark = false, index, category }) => {
   const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
-  const { content } = useApp();
   
   const findProductByName = (productName) => {
     if (!productName) return null;
@@ -972,7 +953,6 @@ const ProductCard = ({ p, dark = false, index, category }) => {
 // BEST SELLERS
 // =============================================
 const BestSellers = () => {
-  const { content } = useApp();
   if (!content?.bestSellers) return null;
   return (
     <section id="mais-vendidos" className="bg-[#f7f3ec] py-28 lg:py-36">
@@ -991,7 +971,6 @@ const BestSellers = () => {
 // TRENDS
 // =============================================
 const Trends = () => {
-  const { content } = useApp();
   if (!content?.trends) return null;
   return (
     <section className="bg-[#f7f3ec] py-28 lg:py-36">
@@ -1027,7 +1006,6 @@ const CategorySection = ({ id, data, dark = false }) => {
 // HERO
 // =============================================
 const Hero = () => {
-  const { content } = useApp();
   if (!content?.hero) return null;
   return (
     <section className="relative min-h-screen w-full flex items-center pt-20">
@@ -1051,7 +1029,6 @@ const Hero = () => {
 // BANNER
 // =============================================
 const Banner = () => {
-  const { content } = useApp();
   if (!content?.banner) return null;
   return (
     <section className="bg-[#0a0807]">
@@ -1067,7 +1044,6 @@ const Banner = () => {
 // FOLLOW
 // =============================================
 const Follow = () => {
-  const { content } = useApp();
   if (!content?.follow) return null;
   return (
     <section className="bg-[#1a1410] py-24 lg:py-28">
@@ -1086,7 +1062,6 @@ const Follow = () => {
 // =============================================
 const Newsletter = () => {
   const [email, setEmail] = useState("");
-  const { content } = useApp();
   const submit = (e) => { e.preventDefault(); if (!email) { toast.error("Informe seu e-mail"); return; } toast.success("Inscrição realizada!"); setEmail(""); };
   if (!content?.newsletter) return null;
   return (
@@ -1102,7 +1077,6 @@ const Newsletter = () => {
 // FOOTER
 // =============================================
 const Footer = () => {
-  const { content } = useApp();
   if (!content?.footer) return null;
   return (
     <footer className="bg-[#050403] text-[#c9a96a]/80 py-20 border-t border-[#c9a96a]/15">
@@ -1121,7 +1095,6 @@ const Footer = () => {
 // HOME PAGE
 // =============================================
 const HomePage = () => {
-  const { content } = useApp();
   return (
     <>
       <Header />
@@ -1145,8 +1118,6 @@ const HomePage = () => {
 // APP PRINCIPAL
 // =============================================
 function App() {
-  const [locale, setLocale] = useState('pt-PT');
-  const content = getContent(locale);
   const [user, setUser] = useState(null);
   const [cart, setCart] = useState([]);
   const [cartCount, setCartCount] = useState(0);
@@ -1160,17 +1131,12 @@ function App() {
 
   const getKitPrice = () => {
     if (!selectedKit) return '0';
-    const priceEur = selectedKit === '3ml' ? 24.99 : 49.99;
-    if (locale === 'pt-BR') {
-      return (priceEur * EUR_TO_BRL).toFixed(2);
-    }
-    return priceEur.toFixed(2);
+    return selectedKit === '3ml' ? '24.99' : '49.99';
   };
   
   const kitPrice = getKitPrice();
   const kitCount = selectedPerfumes.length;
 
-  // Carrega o carrinho quando o usuário muda
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       setUser(user);
@@ -1189,26 +1155,11 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  // Recarrega o carrinho quando a moeda muda (importante!)
-  useEffect(() => {
-    if (user) {
-      loadCart(user.uid);
-    }
-  }, [locale]);
-
   const loadCart = async (userId) => {
     const cartResult = await getCartDB(userId);
     if (cartResult.success) {
-      let cartData = cartResult.cart;
-      // Converte os preços se estiver em Real
-      if (locale === 'pt-BR') {
-        cartData = cartData.map(item => ({
-          ...item,
-          price: item.price * EUR_TO_BRL
-        }));
-      }
-      setCart(cartData);
-      setCartCount(cartData.reduce((total, item) => total + item.quantity, 0));
+      setCart(cartResult.cart);
+      setCartCount(cartResult.cart.reduce((total, item) => total + item.quantity, 0));
     }
   };
 
@@ -1258,10 +1209,7 @@ function App() {
   const addToCart = async (product, price, size, quantity) => {
     if (!user) return;
     
-    // O preço vem em Euro (do content-ptpt.js)
-    let priceInEuro = price;
-    
-    const result = await addToCartDB(user.uid, product.id, product.name, product.image, priceInEuro, size, quantity);
+    const result = await addToCartDB(user.uid, product.id, product.name, product.image, price, size, quantity);
     if (result.success) {
       await loadCart(user.uid);
       toast.success(`${quantity}x ${product.name} adicionado ao carrinho`);
@@ -1322,31 +1270,28 @@ function App() {
   };
 
   const getCartItemsForWhatsApp = () => {
-    const currencySymbol = locale === 'pt-BR' ? 'R$' : '€';
     let message = "*NOVO PEDIDO - NORAYA PERFUMES*\n\n";
     message += "*Cliente:* " + (user?.displayName || user?.email || 'Cliente') + "\n";
     message += "*Email:* " + (user?.email || 'Não informado') + "\n";
-    message += "*Data:* " + new Date().toLocaleString('pt-BR') + "\n\n";
+    message += "*Data:* " + new Date().toLocaleString('pt-PT') + "\n\n";
     message += "*ITENS DO PEDIDO:*\n";
     cart.forEach((item, index) => {
-      message += `${index + 1}. *${item.productName}*\n   Tamanho: ${item.size}\n   Quantidade: ${item.quantity}\n   Preço unitário: ${currencySymbol} ${item.price.toFixed(2)}\n   Subtotal: ${currencySymbol} ${(item.price * item.quantity).toFixed(2)}\n\n`;
+      message += `${index + 1}. *${item.productName}*\n   Tamanho: ${item.size}\n   Quantidade: ${item.quantity}\n   Preço unitário: € ${item.price.toFixed(2)}\n   Subtotal: € ${(item.price * item.quantity).toFixed(2)}\n\n`;
     });
-    message += `*TOTAL DO PEDIDO:* ${currencySymbol} ${getCartTotal()}\n\n*Entrega:* Frete a calcular\n*Pagamento:* A confirmar\n\nAguardando confirmação do pedido. Obrigado!`;
+    message += `*TOTAL DO PEDIDO:* € ${getCartTotal()}\n\n*Entrega:* Frete a calcular\n*Pagamento:* A confirmar\n\nAguardando confirmação do pedido. Obrigado!`;
     return "https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(message);
   };
 
   const sendKitToWhatsApp = () => {
-    const currencySymbol = locale === 'pt-BR' ? 'R$' : '€';
-    const kitValueEur = selectedKit === '3ml' ? 24.99 : 49.99;
-    const kitValue = locale === 'pt-BR' ? (kitValueEur * EUR_TO_BRL).toFixed(2) : kitValueEur.toFixed(2);
+    const kitValue = selectedKit === '3ml' ? '24.99' : '49.99';
     
     let message = "*NOVO KIT DE DECANTS - NORAYA PERFUMES*\n\n";
     message += "*Cliente:* " + (user?.displayName || user?.email || 'Cliente') + "\n";
     message += "*Email:* " + (user?.email || 'Não informado') + "\n";
-    message += "*Data:* " + new Date().toLocaleString('pt-BR') + "\n\n";
-    message += `*KIT ${selectedKit?.toUpperCase()} - 10 DECANTS*\n*Valor do Kit:* ${currencySymbol} ${kitValue}\n\n*PERFUMES SELECIONADOS:*\n`;
+    message += "*Data:* " + new Date().toLocaleString('pt-PT') + "\n\n";
+    message += `*KIT ${selectedKit?.toUpperCase()} - 10 DECANTS*\n*Valor do Kit:* € ${kitValue}\n\n*PERFUMES SELECIONADOS:*\n`;
     selectedPerfumes.forEach((p, index) => { message += `${index + 1}. ${p.name}\n`; });
-    message += `\n*Total de perfumes:* ${selectedPerfumes.length}/10\n*Total do pedido:* ${currencySymbol} ${kitValue}\n\nAguardando confirmação do pedido. Obrigado!`;
+    message += `\n*Total de perfumes:* ${selectedPerfumes.length}/10\n*Total do pedido:* € ${kitValue}\n\nAguardando confirmação do pedido. Obrigado!`;
     window.open("https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(message), '_blank');
     toast.success('Redirecionando para o WhatsApp...');
   };
@@ -1406,7 +1351,7 @@ function App() {
 
   return (
     <AppContext.Provider value={{
-      locale, setLocale, content, user, handleLogin, handleLogout,
+      content, user, handleLogin, handleLogout,
       cart, cartCount, isCartOpen, openCart: () => setIsCartOpen(true), closeCart: () => setIsCartOpen(false),
       handleUpdateQuantity, handleRemoveFromCart, getCartTotal, addToCart,
       getCartItemsForWhatsApp, sendKitToWhatsApp,
