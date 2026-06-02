@@ -7,28 +7,42 @@ import { auth, signInWithGoogle, logout, addToCart as addToCartDB, getCart as ge
 import { collection, query, where, getDocs, doc, setDoc, deleteDoc } from "firebase/firestore";
 import "./App.css";
 
+// Preços dos kits
+const KIT_PRICES = {
+  '3ml': { 3: 16.99, 6: 29.99, 12: 49.99 },
+  '5ml': { 3: 21.99, 6: 37.99, 12: 64.99 }
+};
+
 const AppContext = createContext();
 export const useApp = () => useContext(AppContext);
 
 const WHATSAPP_NUMBER = "351920827969";
 
 // =============================================
-// MODAL DE ESCOLHA DO KIT
+// MODAL DE ESCOLHA DO KIT (COM QUANTIDADES 3, 6, 12)
 // =============================================
 const KitChoiceModal = ({ isOpen, onClose, onSelectKit, selectedSize }) => {
-  const getKitPrice = (kitType) => {
-    return kitType === '3ml' ? '24.99' : '49.99';
+  const [selectedQuantity, setSelectedQuantity] = useState(null);
+  
+  const getKitPrice = (quantity) => {
+    return KIT_PRICES[selectedSize]?.[quantity] || 0;
   };
   
   if (!isOpen) return null;
   
-  const handleSelectKit = (kitType) => {
-    if (selectedSize !== kitType) {
-      toast.error(`Você selecionou um decant de ${selectedSize} mas o kit ${kitType} é para decants de ${kitType}`);
+  const handleSelectKit = () => {
+    if (!selectedQuantity) {
+      toast.error('Selecione a quantidade de perfumes');
       return;
     }
-    onSelectKit(kitType);
+    onSelectKit(selectedSize, selectedQuantity);
   };
+  
+  const quantities = [
+    { value: 3, label: "3 unidades" },
+    { value: 6, label: "6 unidades" },
+    { value: 12, label: "12 unidades" }
+  ];
   
   return (
     <div className="fixed inset-0 z-[9999]">
@@ -41,23 +55,31 @@ const KitChoiceModal = ({ isOpen, onClose, onSelectKit, selectedSize }) => {
           </div>
           <div className="p-6">
             <p className="text-[#e8d6a8] text-center mb-2">
-              Você selecionou um decant de <span className="text-[#e8c98a] font-bold">{selectedSize}</span>
+              Decants de <span className="text-[#e8c98a] font-bold">{selectedSize}</span>
             </p>
-            <p className="text-[#c9a96a]/70 text-center text-sm mb-6">Escolha o kit correspondente:</p>
-            <div className="grid grid-cols-2 gap-5">
-              <button onClick={() => handleSelectKit('3ml')} className={`group bg-[#1a1410] border-2 rounded-xl p-5 text-center transition-all duration-300 ${selectedSize === '3ml' ? 'border-[#c9a96a] hover:bg-[#2a2018]' : 'border-[#c9a96a]/30 opacity-50 cursor-not-allowed'}`} disabled={selectedSize !== '3ml'}>
-                <img src="/images/decant.png" alt="Kit 3ml" className="w-24 h-24 object-contain mx-auto mb-3 group-hover:scale-110 transition-transform" />
-                <p className="text-[#e8c98a] font-bold text-xl mb-1">Kit 3ml</p>
-                <p className="text-[#c9a96a] text-2xl font-bold mb-1">{getKitPrice('3ml')} €</p>
-                <p className="text-[#c9a96a]/60 text-xs">10 decants de 3ml</p>
-              </button>
-              <button onClick={() => handleSelectKit('5ml')} className={`group bg-[#1a1410] border-2 rounded-xl p-5 text-center transition-all duration-300 ${selectedSize === '5ml' ? 'border-[#c9a96a] hover:bg-[#2a2018]' : 'border-[#c9a96a]/30 opacity-50 cursor-not-allowed'}`} disabled={selectedSize !== '5ml'}>
-                <img src="/images/decant1.png" alt="Kit 5ml" className="w-24 h-24 object-contain mx-auto mb-3 group-hover:scale-110 transition-transform" />
-                <p className="text-[#e8c98a] font-bold text-xl mb-1">Kit 5ml</p>
-                <p className="text-[#c9a96a] text-2xl font-bold mb-1">{getKitPrice('5ml')} €</p>
-                <p className="text-[#c9a96a]/60 text-xs">10 decants de 5ml</p>
-              </button>
+            <p className="text-[#c9a96a]/70 text-center text-sm mb-6">Escolha a quantidade:</p>
+            <div className="space-y-3">
+              {quantities.map((q) => (
+                <button
+                  key={q.value}
+                  onClick={() => setSelectedQuantity(q.value)}
+                  className={`w-full flex justify-between items-center p-4 rounded-xl border-2 transition-all ${
+                    selectedQuantity === q.value
+                      ? 'border-[#c9a96a] bg-[#2a2018]'
+                      : 'border-[#c9a96a]/30 bg-[#1a1410] hover:bg-[#2a2018]'
+                  }`}
+                >
+                  <span className="text-[#e8d6a8] font-medium">{q.label}</span>
+                  <span className="text-[#e8c98a] text-xl font-bold">{getKitPrice(q.value).toFixed(2)} €</span>
+                </button>
+              ))}
             </div>
+            <button
+              onClick={handleSelectKit}
+              className="w-full mt-6 py-3 bg-gradient-to-r from-[#c9a96a] to-[#e8c98a] text-black rounded-lg font-semibold hover:shadow-lg transition-all"
+            >
+              Confirmar Kit
+            </button>
           </div>
         </div>
       </div>
@@ -66,7 +88,7 @@ const KitChoiceModal = ({ isOpen, onClose, onSelectKit, selectedSize }) => {
 };
 
 // =============================================
-// HEADER (SEM BOTÃO DE TROCA DE MOEDA)
+// HEADER
 // =============================================
 const Header = () => {
   const [open, setOpen] = useState(false);
@@ -250,10 +272,10 @@ const CartDrawer = () => {
 };
 
 // =============================================
-// KIT DRAWER
+// KIT DRAWER (MODIFICADO)
 // =============================================
 const KitDrawer = () => {
-  const { isKitOpen, closeKit, selectedKit, selectedPerfumes, removeFromKit, clearKit, resetKit, kitPrice, user, sendKitToWhatsApp, handleLogin } = useApp();
+  const { isKitOpen, closeKit, selectedKit, selectedPerfumes, removeFromKit, clearKit, resetKit, kitPrice, kitQuantity, kitSize, user, sendKitToWhatsApp, handleLogin } = useApp();
   
   const handleFinalizeKit = () => {
     if (!user) {
@@ -261,14 +283,18 @@ const KitDrawer = () => {
       handleLogin();
       return;
     }
-    if (selectedPerfumes.length !== 10) {
-      toast.error(`Adicione mais ${10 - selectedPerfumes.length} perfumes para completar o kit`);
+    if (selectedPerfumes.length !== kitQuantity) {
+      toast.error(`Adicione mais ${kitQuantity - selectedPerfumes.length} perfumes para completar o kit`);
       return;
     }
     sendKitToWhatsApp();
   };
   
   if (!isKitOpen) return null;
+  
+  const targetQuantity = kitQuantity || 0;
+  const progress = targetQuantity > 0 ? (selectedPerfumes.length / targetQuantity) * 100 : 0;
+  
   return (
     <>
       <div className="fixed inset-0 bg-black/70 z-[1000]" onClick={closeKit} />
@@ -288,18 +314,20 @@ const KitDrawer = () => {
             <>
               <div className="mb-4 p-3 bg-gradient-to-r from-[#1a1410] to-[#0a0807] rounded-lg">
                 <div className="flex items-center gap-3">
-                  <img src={selectedKit === '3ml' ? '/images/decant.png' : '/images/decant1.png'} alt="Kit" className="w-12 h-12 object-contain" />
+                  <img src={kitSize === '3ml' ? '/images/decant.png' : '/images/decant1.png'} alt="Kit" className="w-12 h-12 object-contain" />
                   <div className="flex-1">
-                    <p className="text-[#e8c98a] font-semibold">Kit {selectedKit}</p>
-                    <p className="text-[#c9a96a] text-sm">{selectedPerfumes.length}/10 perfumes</p>
-                    <div className="w-full bg-[#0a0807] rounded-full h-2 mt-1"><div className="bg-[#c9a96a] h-2 rounded-full transition-all duration-300" style={{ width: `${(selectedPerfumes.length / 10) * 100}%` }} /></div>
+                    <p className="text-[#e8c98a] font-semibold">Kit {kitSize} - {kitQuantity} unidades</p>
+                    <p className="text-[#c9a96a] text-sm">{selectedPerfumes.length}/{kitQuantity} perfumes</p>
+                    <div className="w-full bg-[#0a0807] rounded-full h-2 mt-1">
+                      <div className="bg-[#c9a96a] h-2 rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
+                    </div>
                   </div>
                 </div>
               </div>
               {selectedPerfumes.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-[#c9a96a]/60 text-sm">Nenhum perfume adicionado ainda</p>
-                  <p className="text-[#c9a96a]/40 text-xs mt-2">Vá até um perfume, selecione {selectedKit} e clique em "Adicionar ao Kit"</p>
+                  <p className="text-[#c9a96a]/40 text-xs mt-2">Vá até um perfume, selecione {kitSize} e clique em "Adicionar ao Kit"</p>
                 </div>
               ) : (
                 selectedPerfumes.map((p, idx) => (
@@ -319,9 +347,12 @@ const KitDrawer = () => {
             </>
           )}
         </div>
-        {selectedKit && selectedPerfumes.length === 10 && (
+        {selectedKit && selectedPerfumes.length === kitQuantity && (
           <div className="border-t border-[#c9a96a]/20 p-4 bg-gradient-to-t from-[#0a0807] to-transparent">
-            <div className="flex justify-between items-center mb-3"><span className="text-[#e8d6a8]">Total do Kit</span><span className="text-2xl font-bold text-[#e8c98a]">€ {kitPrice}</span></div>
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-[#e8d6a8]">Total do Kit</span>
+              <span className="text-2xl font-bold text-[#e8c98a]">€ {kitPrice}</span>
+            </div>
             <button onClick={handleFinalizeKit} className="w-full py-3 bg-gradient-to-r from-[#c9a96a] to-[#e8c98a] text-black rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2">
               Finalizar Kit no WhatsApp
             </button>
@@ -519,7 +550,7 @@ const MyReviewsPage = () => {
 };
 
 // =============================================
-// PRODUCT DETAIL
+// PRODUCT DETAIL (COMPLETO E CORRIGIDO)
 // =============================================
 const ProductDetail = () => {
   const { category, id } = useParams();
@@ -537,7 +568,22 @@ const ProductDetail = () => {
   const [hoverRating, setHoverRating] = useState(0);
   const [mainImage, setMainImage] = useState('');
   const [showKitModal, setShowKitModal] = useState(false);
-  const { user, addToCart, addToKit, selectedKit, setSelectedKit, addToFavoritesGlobal, removeFromFavoritesGlobal, loadUserReviews, handleLogin } = useApp();
+  const { 
+    user, 
+    addToCart, 
+    addToKit, 
+    selectedKit, 
+    setSelectedKit, 
+    kitSize, 
+    setKitSize, 
+    kitQuantity, 
+    setKitQuantity, 
+    selectedPerfumes,
+    addToFavoritesGlobal, 
+    removeFromFavoritesGlobal, 
+    loadUserReviews, 
+    handleLogin 
+  } = useApp();
 
   const extractPriceValue = (priceStr) => {
     if (!priceStr) return 0;
@@ -636,27 +682,19 @@ const ProductDetail = () => {
       return; 
     }
     const currentDecantSize = selectedSize;
-    if (selectedKit) {
-      if (selectedKit !== currentDecantSize) {
-        toast.error(`Seu kit atual é para decants de ${selectedKit}, mas você selecionou um decant de ${currentDecantSize}`);
-        return;
-      }
+    if (selectedKit && kitSize === currentDecantSize) {
       addToKit(product);
       return;
     }
     setShowKitModal(true);
   };
 
-  const handleSelectKit = (kitType) => {
-    if (selectedSize !== kitType) {
-      toast.error(`O decant selecionado é de ${selectedSize}, mas você tentou criar um kit ${kitType}`);
-      setShowKitModal(false);
-      return;
-    }
-    setSelectedKit(kitType);
+  const handleSelectKit = (size, quantity) => {
+    setSelectedKit(true);
+    setKitSize(size);
+    setKitQuantity(quantity);
     setShowKitModal(false);
-    toast.success(`Kit ${kitType} selecionado! Adicionando perfume ao kit...`);
-    setTimeout(() => { addToKit(product); }, 100);
+    toast.success(`Kit ${size} - ${quantity} unidades selecionado! Adicione ${quantity} perfumes.`);
   };
 
   const handleToggleFavorite = () => {
@@ -811,21 +849,35 @@ const ProductDetail = () => {
                 <div className="bg-gradient-to-r from-[#1a1410] to-[#0a0807] p-4 rounded-xl border border-[#c9a96a]/20">
                   <p className="text-[#e8c98a] font-semibold text-lg">🎁 Decant de {selectedSize}</p>
                   <p className="text-[#c9a96a]/80 text-sm mt-1">
-                    Este decant faz parte do kit! Monte 10 perfumes por apenas {selectedSize === '3ml' ? '24,99€' : '49,99€'}
+                    Este decant faz parte do kit! Escolha a quantidade:
                   </p>
-                  <p className="text-[#c9a96a]/60 text-xs mt-2">*Os decants não são vendidos individualmente, apenas no kit de 10 unidades.</p>
-                  {!selectedKit ? (
-                    <div className="mt-3 flex items-center gap-2 text-amber-400 text-sm bg-amber-400/10 p-2 rounded-lg">
-                      <span>⚠️</span> Clique em "ADICIONAR AO KIT" para escolher o tamanho do kit
+                  <div className="mt-3 space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-[#c9a96a]/80">3 unidades</span>
+                      <span className="text-[#e8c98a] font-bold">{KIT_PRICES[selectedSize]?.[3]?.toFixed(2)} €</span>
                     </div>
-                  ) : selectedKit !== selectedSize ? (
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-[#c9a96a]/80">6 unidades</span>
+                      <span className="text-[#e8c98a] font-bold">{KIT_PRICES[selectedSize]?.[6]?.toFixed(2)} €</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-[#c9a96a]/80">12 unidades</span>
+                      <span className="text-[#e8c98a] font-bold">{KIT_PRICES[selectedSize]?.[12]?.toFixed(2)} €</span>
+                    </div>
+                  </div>
+                  <p className="text-[#c9a96a]/60 text-xs mt-3">*Os decants não são vendidos individualmente, apenas nos kits acima.</p>
+                  {!selectedKit ? (
+                    <button onClick={handleAddToKit} className="mt-4 w-full py-2 bg-gradient-to-r from-[#c9a96a] to-[#e8c98a] text-black rounded-lg font-semibold hover:shadow-lg transition-all">
+                      SELECIONAR KIT
+                    </button>
+                  ) : kitSize !== selectedSize ? (
                     <div className="mt-3 flex items-center gap-2 text-red-400 text-sm bg-red-400/10 p-2 rounded-lg">
-                      <span>⚠️</span> Seu kit é para decants de {selectedKit}
+                      <span>⚠️</span> Seu kit atual é para decants de {kitSize}. Clique em "SELECIONAR KIT" para trocar.
                     </div>
                   ) : (
-                    <div className="mt-3 flex items-center gap-2 text-green-400 text-sm bg-green-400/10 p-2 rounded-lg">
-                      <span>✓</span> Kit {selectedKit} selecionado! Clique em "ADICIONAR AO KIT"
-                    </div>
+                    <button onClick={handleAddToKit} className="mt-4 w-full py-2 bg-gradient-to-r from-[#c9a96a] to-[#e8c98a] text-black rounded-lg font-semibold hover:shadow-lg transition-all">
+                      ADICIONAR AO KIT ({selectedPerfumes?.length || 0}/{kitQuantity})
+                    </button>
                   )}
                 </div>
               )}
@@ -845,7 +897,7 @@ const ProductDetail = () => {
                 ) : (
                   <button onClick={handleAddToKit} className="flex-1 bg-gradient-to-r from-[#c9a96a] to-[#e8c98a] text-black py-3 rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2">
                     <img src="/images/decant.png" alt="Kit" className="w-5 h-5 object-contain" />
-                    ADICIONAR AO KIT
+                    SELECIONAR KIT
                   </button>
                 )}
               </div>
@@ -1123,18 +1175,19 @@ function App() {
   const [cartCount, setCartCount] = useState(0);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isKitOpen, setIsKitOpen] = useState(false);
-  const [selectedKit, setSelectedKit] = useState(null);
+  const [selectedKit, setSelectedKit] = useState(false);
+  const [kitSize, setKitSize] = useState(null);
+  const [kitQuantity, setKitQuantity] = useState(0);
   const [selectedPerfumes, setSelectedPerfumes] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [favoritesCount, setFavoritesCount] = useState(0);
   const [userReviews, setUserReviews] = useState([]);
 
-  const getKitPrice = () => {
-    if (!selectedKit) return '0';
-    return selectedKit === '3ml' ? '24.99' : '49.99';
-  };
+  const kitPrice = (() => {
+    if (!kitSize || !kitQuantity) return '0';
+    return KIT_PRICES[kitSize]?.[kitQuantity]?.toFixed(2) || '0';
+  })();
   
-  const kitPrice = getKitPrice();
   const kitCount = selectedPerfumes.length;
 
   useEffect(() => {
@@ -1283,15 +1336,17 @@ function App() {
   };
 
   const sendKitToWhatsApp = () => {
-    const kitValue = selectedKit === '3ml' ? '24.99' : '49.99';
-    
     let message = "*NOVO KIT DE DECANTS - NORAYA PERFUMES*\n\n";
     message += "*Cliente:* " + (user?.displayName || user?.email || 'Cliente') + "\n";
     message += "*Email:* " + (user?.email || 'Não informado') + "\n";
     message += "*Data:* " + new Date().toLocaleString('pt-PT') + "\n\n";
-    message += `*KIT ${selectedKit?.toUpperCase()} - 10 DECANTS*\n*Valor do Kit:* € ${kitValue}\n\n*PERFUMES SELECIONADOS:*\n`;
+    message += `*KIT ${kitSize?.toUpperCase()} - ${kitQuantity} UNIDADES*\n`;
+    message += `*Valor do Kit:* € ${kitPrice}\n\n`;
+    message += "*PERFUMES SELECIONADOS:*\n";
     selectedPerfumes.forEach((p, index) => { message += `${index + 1}. ${p.name}\n`; });
-    message += `\n*Total de perfumes:* ${selectedPerfumes.length}/10\n*Total do pedido:* € ${kitValue}\n\nAguardando confirmação do pedido. Obrigado!`;
+    message += `\n*Total de perfumes:* ${selectedPerfumes.length}/${kitQuantity}\n`;
+    message += `*Total do pedido:* € ${kitPrice}\n\n`;
+    message += "Aguardando confirmação do pedido. Obrigado!";
     window.open("https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(message), '_blank');
     toast.success('Redirecionando para o WhatsApp...');
   };
@@ -1337,17 +1392,26 @@ function App() {
   };
 
   const addToKit = (product) => {
-    if (!selectedKit) { toast.error('Selecione um kit primeiro'); return false; }
-    if (selectedPerfumes.length >= 10) { toast.error('Limite de 10 perfumes atingido'); return false; }
-    if (selectedPerfumes.find(p => p.id === product.id)) { toast.info(product.name + ' já está no seu kit!'); return false; }
-    setSelectedPerfumes([...selectedPerfumes, { id: product.id, name: product.name, image: product.image, size: selectedKit }]);
-    toast.success(product.name + ' adicionado ao kit! (' + (selectedPerfumes.length + 1) + '/10)');
+    if (!kitSize || !kitQuantity) { 
+      toast.error('Selecione um kit primeiro'); 
+      return false; 
+    }
+    if (selectedPerfumes.length >= kitQuantity) { 
+      toast.error(`Limite de ${kitQuantity} perfumes atingido`); 
+      return false; 
+    }
+    if (selectedPerfumes.find(p => p.id === product.id)) { 
+      toast.info(product.name + ' já está no seu kit!'); 
+      return false; 
+    }
+    setSelectedPerfumes([...selectedPerfumes, { id: product.id, name: product.name, image: product.image, size: kitSize }]);
+    toast.success(product.name + ' adicionado ao kit! (' + (selectedPerfumes.length + 1) + '/' + kitQuantity + ')');
     return true;
   };
 
   const removeFromKit = (id) => { setSelectedPerfumes(selectedPerfumes.filter(p => p.id !== id)); toast.info('Perfume removido do kit'); };
   const clearKit = () => { setSelectedPerfumes([]); toast.info('Kit limpo'); };
-  const resetKit = () => { setSelectedKit(null); setSelectedPerfumes([]); toast.info('Kit resetado'); };
+  const resetKit = () => { setSelectedKit(false); setKitSize(null); setKitQuantity(0); setSelectedPerfumes([]); toast.info('Kit resetado'); };
 
   return (
     <AppContext.Provider value={{
@@ -1356,7 +1420,8 @@ function App() {
       handleUpdateQuantity, handleRemoveFromCart, getCartTotal, addToCart,
       getCartItemsForWhatsApp, sendKitToWhatsApp,
       isKitOpen, openKit: () => setIsKitOpen(true), closeKit: () => setIsKitOpen(false),
-      selectedKit, setSelectedKit, selectedPerfumes, addToKit, removeFromKit, clearKit, resetKit, kitPrice, kitCount,
+      selectedKit, setSelectedKit, kitSize, setKitSize, kitQuantity, setKitQuantity,
+      selectedPerfumes, addToKit, removeFromKit, clearKit, resetKit, kitPrice, kitCount,
       favorites, favoritesCount, addToFavoritesGlobal, removeFromFavoritesGlobal,
       userReviews, loadUserReviews: () => user && loadUserReviews(user.uid)
     }}>
