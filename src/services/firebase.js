@@ -15,7 +15,8 @@ import {
   getDocs, 
   doc, 
   updateDoc,
-  orderBy
+  orderBy,
+  deleteDoc
 } from "firebase/firestore";
 
 // Sua configuração do Firebase
@@ -71,7 +72,7 @@ export { auth, db };
 // AVALIAÇÕES
 // =============================================
 
-export const addReview = async (productId, userId, userName, userPhoto, rating, comment) => {
+export const addReview = async (productId, userId, userName, userPhoto, rating, comment, productName, productImage, category) => {
   try {
     const reviewData = {
       productId: String(productId),
@@ -81,7 +82,10 @@ export const addReview = async (productId, userId, userName, userPhoto, rating, 
       rating: Number(rating),
       comment,
       createdAt: new Date().toISOString(),
-      helpful: 0
+      helpful: 0,
+      productName: productName || "",
+      productImage: productImage || "",
+      category: category || ""
     };
     const docRef = await addDoc(collection(db, "reviews"), reviewData);
     return { success: true, id: docRef.id, data: reviewData };
@@ -145,17 +149,30 @@ export const markHelpful = async (reviewId) => {
   }
 };
 
+export const deleteReview = async (reviewId, userId) => {
+  try {
+    const reviewRef = doc(db, "reviews", reviewId);
+    await deleteDoc(reviewRef);
+    return { success: true };
+  } catch (error) {
+    console.error("Erro ao deletar avaliação:", error);
+    return { success: false, error: error.message };
+  }
+};
+
 // =============================================
 // FAVORITOS
 // =============================================
 
-export const addToFavorites = async (userId, productId, productName, productImage) => {
+export const addToFavorites = async (userId, productId, productName, productImage, productPrice, category) => {
   try {
     const favoriteData = {
       userId,
       productId: String(productId),
       productName,
       productImage,
+      productPrice: productPrice || 0,
+      category: category || "",
       addedAt: new Date().toISOString()
     };
     const docRef = await addDoc(collection(db, "favorites"), favoriteData);
@@ -174,9 +191,9 @@ export const removeFromFavorites = async (userId, productId) => {
       where("productId", "==", String(productId))
     );
     const querySnapshot = await getDocs(q);
-    querySnapshot.forEach(async (doc) => {
+    for (const doc of querySnapshot.docs) {
       await deleteDoc(doc.ref);
-    });
+    }
     return { success: true };
   } catch (error) {
     console.error("Erro ao remover dos favoritos:", error);
@@ -210,8 +227,9 @@ export const checkIsFavorite = async (userId, productId) => {
       where("productId", "==", String(productId))
     );
     const querySnapshot = await getDocs(q);
-    return { success: true, checkIsFavorite: !querySnapshot.empty };
+    return { success: true, isFavorite: !querySnapshot.empty };
   } catch (error) {
+    console.error("Erro ao verificar favorito:", error);
     return { success: false, isFavorite: false };
   }
 };
@@ -222,6 +240,11 @@ export const checkIsFavorite = async (userId, productId) => {
 
 export const addToCart = async (userId, productId, productName, productImage, price, size, quantity) => {
   try {
+    console.log("=== addToCart - firebase.js ===");
+    console.log("userId:", userId);
+    console.log("productId:", productId);
+    console.log("size:", size);
+    
     // Verificar se o produto já está no carrinho
     const q = query(
       collection(db, "cart"),
@@ -237,6 +260,7 @@ export const addToCart = async (userId, productId, productName, productImage, pr
       const cartRef = doc(db, "cart", cartItem.id);
       const newQuantity = cartItem.data().quantity + quantity;
       await updateDoc(cartRef, { quantity: newQuantity });
+      console.log("✅ Quantidade atualizada para:", newQuantity);
       return { success: true, message: "Quantidade atualizada" };
     } else {
       // Adicionar novo item
@@ -244,23 +268,30 @@ export const addToCart = async (userId, productId, productName, productImage, pr
         userId,
         productId: String(productId),
         productName,
-        productImage,
+        productImage: productImage || "",
         price: Number(price),
         size,
         quantity: Number(quantity),
         addedAt: new Date().toISOString()
       };
+      console.log("Adicionando novo item:", cartData);
       const docRef = await addDoc(collection(db, "cart"), cartData);
+      console.log("✅ Item adicionado com ID:", docRef.id);
       return { success: true, id: docRef.id };
     }
   } catch (error) {
-    console.error("Erro ao adicionar ao carrinho:", error);
+    console.error("❌ Erro ao adicionar ao carrinho:", error);
+    console.error("Código do erro:", error.code);
+    console.error("Mensagem:", error.message);
     return { success: false, error: error.message };
   }
 };
 
 export const getCart = async (userId) => {
   try {
+    console.log("=== getCart - firebase.js ===");
+    console.log("userId:", userId);
+    
     const q = query(
       collection(db, "cart"),
       where("userId", "==", userId)
@@ -270,9 +301,10 @@ export const getCart = async (userId) => {
     querySnapshot.forEach((doc) => {
       cart.push({ id: doc.id, ...doc.data() });
     });
+    console.log(`✅ Encontrados ${cart.length} itens no carrinho`);
     return { success: true, cart };
   } catch (error) {
-    console.error("Erro ao buscar carrinho:", error);
+    console.error("❌ Erro ao buscar carrinho:", error);
     return { success: false, cart: [] };
   }
 };
@@ -290,11 +322,15 @@ export const updateCartQuantity = async (cartId, quantity) => {
 
 export const removeFromCart = async (cartId) => {
   try {
+    console.log("=== removeFromCart - firebase.js ===");
+    console.log("cartId:", cartId);
+    
     const cartRef = doc(db, "cart", cartId);
     await deleteDoc(cartRef);
+    console.log("✅ Item removido do carrinho");
     return { success: true };
   } catch (error) {
-    console.error("Erro ao remover do carrinho:", error);
+    console.error("❌ Erro ao remover do carrinho:", error);
     return { success: false, error: error.message };
   }
 };
@@ -303,9 +339,9 @@ export const clearCart = async (userId) => {
   try {
     const q = query(collection(db, "cart"), where("userId", "==", userId));
     const querySnapshot = await getDocs(q);
-    querySnapshot.forEach(async (doc) => {
+    for (const doc of querySnapshot.docs) {
       await deleteDoc(doc.ref);
-    });
+    }
     return { success: true };
   } catch (error) {
     console.error("Erro ao limpar carrinho:", error);
@@ -315,10 +351,15 @@ export const clearCart = async (userId) => {
 
 export const isFavorite = async (userId, productId) => {
   try {
-    const q = query(collection(db, "favorites"), where("userId", "==", userId), where("productId", "==", String(productId)));
+    const q = query(
+      collection(db, "favorites"), 
+      where("userId", "==", userId), 
+      where("productId", "==", String(productId))
+    );
     const querySnapshot = await getDocs(q);
     return { success: true, isFavorite: !querySnapshot.empty };
   } catch (error) {
+    console.error("Erro ao verificar favorito:", error);
     return { success: false, isFavorite: false };
   }
 };

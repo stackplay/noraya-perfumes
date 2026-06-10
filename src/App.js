@@ -3,14 +3,32 @@ import { BrowserRouter, Routes, Route, Link, useNavigate, useParams } from "reac
 import { ShoppingBag, ShoppingCart, User, Menu, X, Instagram, Star, Heart, Truck, Shield, RefreshCw, Minus, Plus, Trash2, LogOut, LogIn } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import * as content from "./data/content-ptpt";
-import { auth, signInWithGoogle, logout, addToCart as addToCartDB, getCart as getCartDB, updateCartQuantity as updateCartQuantityDB, removeFromCart as removeFromCartDB, addReview, getProductReviews, getProductRating, markHelpful, db } from "./services/firebase";
+import { auth, signInWithGoogle, logout, addToCart as addToCartDB, getCart as getCartDB, updateCartQuantity as updateCartQuantityDB, removeFromCart as removeFromCartDB, addReview, getProductReviews, getProductRating, markHelpful, deleteReview, db } from "./services/firebase";
 import { collection, query, where, getDocs, doc, setDoc, deleteDoc } from "firebase/firestore";
 import "./App.css";
 
-// Preços dos kits
+// Preços dos kits (sempre 10 decants)
 const KIT_PRICES = {
-  '3ml': { 3: 16.99, 6: 29.99, 12: 49.99 },
-  '5ml': { 3: 21.99, 6: 37.99, 12: 64.99 }
+  '2ml': 19.99,
+  '3ml': 29.99,
+  '5ml': 44.99,
+  '10ml': 69.99
+};
+
+// Função para pegar imagem do decant (usa as imagens existentes)
+const getDecantImage = (size) => {
+  switch(size) {
+    case '2ml':
+      return '/images/decant.png';
+    case '3ml':
+      return '/images/decant.png';
+    case '5ml':
+      return '/images/decant1.png';
+    case '10ml':
+      return '/images/decant1.png';
+    default:
+      return '/images/decant.png';
+  }
 };
 
 const AppContext = createContext();
@@ -19,30 +37,17 @@ export const useApp = () => useContext(AppContext);
 const WHATSAPP_NUMBER = "351920827969";
 
 // =============================================
-// MODAL DE ESCOLHA DO KIT (COM QUANTIDADES 3, 6, 12)
+// MODAL DE ESCOLHA DO KIT
 // =============================================
 const KitChoiceModal = ({ isOpen, onClose, onSelectKit, selectedSize }) => {
-  const [selectedQuantity, setSelectedQuantity] = useState(null);
-  
-  const getKitPrice = (quantity) => {
-    return KIT_PRICES[selectedSize]?.[quantity] || 0;
-  };
-  
   if (!isOpen) return null;
   
-  const handleSelectKit = () => {
-    if (!selectedQuantity) {
-      toast.error('Selecione a quantidade de perfumes');
-      return;
-    }
-    onSelectKit(selectedSize, selectedQuantity);
-  };
+  const kitPrice = KIT_PRICES[selectedSize] || 0;
+  const decantImage = getDecantImage(selectedSize);
   
-  const quantities = [
-    { value: 3, label: "3 unidades" },
-    { value: 6, label: "6 unidades" },
-    { value: 12, label: "12 unidades" }
-  ];
+  const handleSelectKit = () => {
+    onSelectKit(selectedSize);
+  };
   
   return (
     <div className="fixed inset-0 z-[9999]">
@@ -50,33 +55,21 @@ const KitChoiceModal = ({ isOpen, onClose, onSelectKit, selectedSize }) => {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md">
         <div className="bg-[#0a0807] border-2 border-[#c9a96a] rounded-2xl shadow-2xl overflow-hidden">
           <div className="p-4 border-b border-[#c9a96a]/30 flex justify-between items-center bg-[#1a1410]">
-            <h2 className="text-xl font-display text-[#e8c98a]">Escolha seu Kit</h2>
+            <h2 className="text-xl font-display text-[#e8c98a]">Confirmar Kit</h2>
             <button onClick={onClose} className="text-[#c9a96a] hover:text-[#e8c98a]"><X size={24} /></button>
           </div>
           <div className="p-6">
+            <img src={decantImage} alt={`Decant ${selectedSize}`} className="w-24 h-24 object-contain mx-auto mb-4" />
             <p className="text-[#e8d6a8] text-center mb-2">
-              Decants de <span className="text-[#e8c98a] font-bold">{selectedSize}</span>
+              Kit de <span className="text-[#e8c98a] font-bold">{selectedSize}</span>
             </p>
-            <p className="text-[#c9a96a]/70 text-center text-sm mb-6">Escolha a quantidade:</p>
-            <div className="space-y-3">
-              {quantities.map((q) => (
-                <button
-                  key={q.value}
-                  onClick={() => setSelectedQuantity(q.value)}
-                  className={`w-full flex justify-between items-center p-4 rounded-xl border-2 transition-all ${
-                    selectedQuantity === q.value
-                      ? 'border-[#c9a96a] bg-[#2a2018]'
-                      : 'border-[#c9a96a]/30 bg-[#1a1410] hover:bg-[#2a2018]'
-                  }`}
-                >
-                  <span className="text-[#e8d6a8] font-medium">{q.label}</span>
-                  <span className="text-[#e8c98a] text-xl font-bold">{getKitPrice(q.value).toFixed(2)} €</span>
-                </button>
-              ))}
+            <p className="text-[#c9a96a]/70 text-center text-sm mb-4">10 decants</p>
+            <div className="text-center mb-6">
+              <span className="text-3xl font-bold text-[#e8c98a]">{kitPrice.toFixed(2)} €</span>
             </div>
             <button
               onClick={handleSelectKit}
-              className="w-full mt-6 py-3 bg-gradient-to-r from-[#c9a96a] to-[#e8c98a] text-black rounded-lg font-semibold hover:shadow-lg transition-all"
+              className="w-full py-3 bg-gradient-to-r from-[#c9a96a] to-[#e8c98a] text-black rounded-lg font-semibold hover:shadow-lg transition-all"
             >
               Confirmar Kit
             </button>
@@ -272,10 +265,10 @@ const CartDrawer = () => {
 };
 
 // =============================================
-// KIT DRAWER (MODIFICADO)
+// KIT DRAWER
 // =============================================
 const KitDrawer = () => {
-  const { isKitOpen, closeKit, selectedKit, selectedPerfumes, removeFromKit, clearKit, resetKit, kitPrice, kitQuantity, kitSize, user, sendKitToWhatsApp, handleLogin } = useApp();
+  const { isKitOpen, closeKit, selectedKit, selectedPerfumes, removeFromKit, clearKit, resetKit, kitPrice, kitSize, user, sendKitToWhatsApp, handleLogin } = useApp();
   
   const handleFinalizeKit = () => {
     if (!user) {
@@ -283,8 +276,8 @@ const KitDrawer = () => {
       handleLogin();
       return;
     }
-    if (selectedPerfumes.length !== kitQuantity) {
-      toast.error(`Adicione mais ${kitQuantity - selectedPerfumes.length} perfumes para completar o kit`);
+    if (selectedPerfumes.length !== 10) {
+      toast.error(`Adicione mais ${10 - selectedPerfumes.length} perfumes para completar o kit`);
       return;
     }
     sendKitToWhatsApp();
@@ -292,8 +285,8 @@ const KitDrawer = () => {
   
   if (!isKitOpen) return null;
   
-  const targetQuantity = kitQuantity || 0;
-  const progress = targetQuantity > 0 ? (selectedPerfumes.length / targetQuantity) * 100 : 0;
+  const progress = (selectedPerfumes.length / 10) * 100;
+  const kitImage = getDecantImage(kitSize);
   
   return (
     <>
@@ -314,10 +307,10 @@ const KitDrawer = () => {
             <>
               <div className="mb-4 p-3 bg-gradient-to-r from-[#1a1410] to-[#0a0807] rounded-lg">
                 <div className="flex items-center gap-3">
-                  <img src={kitSize === '3ml' ? '/images/decant.png' : '/images/decant1.png'} alt="Kit" className="w-12 h-12 object-contain" />
+                  <img src={kitImage} alt="Kit" className="w-12 h-12 object-contain" />
                   <div className="flex-1">
-                    <p className="text-[#e8c98a] font-semibold">Kit {kitSize} - {kitQuantity} unidades</p>
-                    <p className="text-[#c9a96a] text-sm">{selectedPerfumes.length}/{kitQuantity} perfumes</p>
+                    <p className="text-[#e8c98a] font-semibold">Kit {kitSize} - 10 decants</p>
+                    <p className="text-[#c9a96a] text-sm">{selectedPerfumes.length}/10 perfumes</p>
                     <div className="w-full bg-[#0a0807] rounded-full h-2 mt-1">
                       <div className="bg-[#c9a96a] h-2 rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
                     </div>
@@ -347,7 +340,7 @@ const KitDrawer = () => {
             </>
           )}
         </div>
-        {selectedKit && selectedPerfumes.length === kitQuantity && (
+        {selectedKit && selectedPerfumes.length === 10 && (
           <div className="border-t border-[#c9a96a]/20 p-4 bg-gradient-to-t from-[#0a0807] to-transparent">
             <div className="flex justify-between items-center mb-3">
               <span className="text-[#e8d6a8]">Total do Kit</span>
@@ -442,7 +435,7 @@ const FavoritesPage = () => {
                 </div>
                 <div className="p-4">
                   <h3 className="font-medium text-[#1a1410] truncate">{item.productName}</h3>
-                  <p className="text-[#c9a96a] font-semibold mt-1">{item.productPrice || 'Preço sob consulta'}</p>
+                  <p className="text-[#c9a96a] font-semibold mt-1">{item.productPrice || 'Sob encomenda'}</p>
                   <button onClick={() => handleProductClick(item)} className="w-full mt-3 py-2 border border-[#c9a96a] text-[#c9a96a] rounded-lg text-sm hover:bg-[#c9a96a] hover:text-black">Ver detalhes</button>
                 </div>
               </div>
@@ -458,7 +451,7 @@ const FavoritesPage = () => {
 // PAGINA DE MINHAS AVALIACOES
 // =============================================
 const MyReviewsPage = () => {
-  const { user, userReviews, handleLogin } = useApp();
+  const { user, userReviews, handleDeleteReview, handleLogin } = useApp();
   const navigate = useNavigate();
   
   const findProductByName = (productName) => {
@@ -536,8 +529,16 @@ const MyReviewsPage = () => {
                     <p className="text-[#1a1410]/80 mb-3">{review.comment}</p>
                     <button onClick={() => handleProductClick(review)} className="text-sm text-[#c9a96a] hover:underline">Ver produto →</button>
                   </div>
-                  <div className="w-16 h-16 bg-[#f7f3ec] rounded-lg flex items-center justify-center overflow-hidden">
-                    <img src={review.productImage} alt="" className="max-h-full max-w-full object-contain" />
+                  <div className="flex flex-col items-end gap-2">
+                    <div className="w-16 h-16 bg-[#f7f3ec] rounded-lg flex items-center justify-center overflow-hidden">
+                      <img src={review.productImage} alt="" className="max-h-full max-w-full object-contain" />
+                    </div>
+                    <button 
+                      onClick={() => handleDeleteReview(review.id, review.userId)}
+                      className="text-xs text-red-500 hover:text-red-700 transition-colors flex items-center gap-1"
+                    >
+                      <Trash2 size={14} /> Excluir
+                    </button>
                   </div>
                 </div>
               </div>
@@ -550,14 +551,13 @@ const MyReviewsPage = () => {
 };
 
 // =============================================
-// PRODUCT DETAIL (COMPLETO E CORRIGIDO)
+// PRODUCT DETAIL
 // =============================================
 const ProductDetail = () => {
   const { category, id } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [reviews, setReviews] = useState([]);
@@ -570,26 +570,19 @@ const ProductDetail = () => {
   const [showKitModal, setShowKitModal] = useState(false);
   const { 
     user, 
-    addToCart, 
+    addToCart,
     addToKit, 
     selectedKit, 
     setSelectedKit, 
     kitSize, 
     setKitSize, 
-    kitQuantity, 
-    setKitQuantity, 
     selectedPerfumes,
     addToFavoritesGlobal, 
     removeFromFavoritesGlobal, 
     loadUserReviews, 
-    handleLogin 
+    handleLogin,
+    handleDeleteReview
   } = useApp();
-
-  const extractPriceValue = (priceStr) => {
-    if (!priceStr) return 0;
-    const numericStr = priceStr.toString().replace(/[€]/g, '').replace(',', '.').trim();
-    return parseFloat(numericStr);
-  };
 
   useEffect(() => {
     const fetchProduct = () => {
@@ -615,27 +608,15 @@ const ProductDetail = () => {
         }
         
         if (foundProduct) {
-          let priceValue = extractPriceValue(foundProduct.price);
-          
-          if (priceValue === 0 && foundProduct.sizes) {
-            const size100ml = foundProduct.sizes.find(s => s.size === '100ml');
-            if (size100ml && size100ml.price) {
-              priceValue = typeof size100ml.price === 'number' ? size100ml.price : extractPriceValue(String(size100ml.price));
-            }
-          }
-          
           const enhancedProduct = {
             ...foundProduct,
             id: productIndex,
-            priceValue: priceValue,
-            priceDisplay: foundProduct.price,
             images: foundProduct.images || [foundProduct.image, foundProduct.hoverImage || foundProduct.image],
             category: categoryName,
-            sizes: foundProduct.sizes || [{ size: "100ml", price: priceValue }]
           };
           setProduct(enhancedProduct);
           setMainImage(enhancedProduct.images[0]);
-          setSelectedSize('100ml');
+          setSelectedSize(null);
         } else {
           setProduct(null);
         }
@@ -681,20 +662,18 @@ const ProductDetail = () => {
       handleLogin();
       return; 
     }
-    const currentDecantSize = selectedSize;
-    if (selectedKit && kitSize === currentDecantSize) {
+    if (selectedKit && kitSize === selectedSize) {
       addToKit(product);
       return;
     }
     setShowKitModal(true);
   };
 
-  const handleSelectKit = (size, quantity) => {
+  const handleSelectKit = (size) => {
     setSelectedKit(true);
     setKitSize(size);
-    setKitQuantity(quantity);
     setShowKitModal(false);
-    toast.success(`Kit ${size} - ${quantity} unidades selecionado! Adicione ${quantity} perfumes.`);
+    toast.success(`Kit ${size} - 10 decants selecionado! Adicione 10 perfumes.`);
   };
 
   const handleToggleFavorite = () => {
@@ -708,7 +687,7 @@ const ProductDetail = () => {
       setIsFavorite(false);
       toast.success('Removido dos favoritos');
     } else {
-      addToFavoritesGlobal({ ...product, price: product.priceValue });
+      addToFavoritesGlobal({ ...product, price: null });
       setIsFavorite(true);
       toast.success('Adicionado aos favoritos');
     }
@@ -751,24 +730,72 @@ const ProductDetail = () => {
     submit();
   };
 
+  const handleWhatsAppEncomenda = () => {
+    const message = `*ENCOMENDA - NORAYA PERFUMES*\n\n*Produto:* ${product?.name}\n*Tamanho:* 100ml (Frasco original)\n*Preço:* Sob consulta\n\n*Cliente:* ${user?.displayName || user?.email || 'Cliente'}\n\nGostaria de saber o valor e disponibilidade deste perfume.`;
+    window.open("https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(message), '_blank');
+    toast.success('Redirecionando para o WhatsApp...');
+  };
+
   const handleAddToCartClick = () => {
     if (!user) {
       toast.error('Faça login para comprar');
       handleLogin();
       return;
     }
-    if (selectedSize !== '100ml') {
-      toast.error('Os decants são vendidos apenas em kit! Clique em "ADICIONAR AO KIT"');
+    if (!selectedSize) {
+      toast.error('Selecione um tamanho');
       return;
     }
-    addToCart(product, product.priceValue, selectedSize, quantity);
+    // Para decants, adiciona ao kit em vez do carrinho
+    if (selectedSize === '2ml' || selectedSize === '3ml' || selectedSize === '5ml' || selectedSize === '10ml') {
+      handleAddToKit();
+      return;
+    }
+    // Para outros produtos (se houver)
+    toast.error('Este produto está disponível apenas sob encomenda');
+  };
+
+  const handleDeleteLocalReview = async (reviewId, reviewUserId) => {
+    if (!user) {
+      toast.error('Faça login para excluir avaliações');
+      return;
+    }
+    
+    if (user.uid !== reviewUserId) {
+      toast.error('Você só pode excluir suas próprias avaliações');
+      return;
+    }
+    
+    const confirmed = window.confirm('Tem certeza que deseja excluir esta avaliação?');
+    if (!confirmed) return;
+    
+    try {
+      const result = await deleteReview(reviewId, user.uid);
+      if (result.success) {
+        toast.success('Avaliação excluída com sucesso!');
+        const newReviews = await getProductReviews(id);
+        if (newReviews.success) setReviews(newReviews.reviews);
+        const newRating = await getProductRating(id);
+        if (newRating.success) {
+          setAverageRating(newRating.average);
+          setTotalReviews(newRating.total);
+        }
+        if (loadUserReviews) loadUserReviews();
+      } else {
+        toast.error('Erro ao excluir avaliação');
+      }
+    } catch (error) {
+      console.error('Erro:', error);
+      toast.error('Erro ao excluir avaliação');
+    }
   };
 
   if (loading) return <div className="min-h-screen bg-[#f7f3ec] flex items-center justify-center pt-20"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#c9a96a]"></div></div>;
   if (!product) return <div className="min-h-screen bg-[#f7f3ec] flex items-center justify-center pt-20"><p>Produto não encontrado</p><button onClick={() => navigate(-1)} className="mt-4 px-6 py-2 bg-[#c9a96a] text-white rounded-lg">Voltar</button></div>;
 
-  const isDecant = selectedSize === '3ml' || selectedSize === '5ml';
-  const fixedPrice100ml = product.priceValue || 0;
+  const isDecant = selectedSize && ['2ml', '3ml', '5ml', '10ml'].includes(selectedSize);
+  const kitPrice = selectedSize ? KIT_PRICES[selectedSize] : 0;
+  const cartButtonText = isDecant ? `ADICIONAR AO KIT (${selectedPerfumes?.length || 0}/10)` : 'COMPRAR AGORA';
 
   return (
     <div className="bg-[#f7f3ec] min-h-screen pb-16 pt-24">
@@ -803,11 +830,11 @@ const ProductDetail = () => {
                 ))}
                 <button onClick={() => setMainImage('/images/decant.png')} className="w-20 h-20 rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#c9a96a] relative">
                   <img src="/images/decant.png" className="w-full h-full object-cover" />
-                  <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-[9px] text-center py-0.5">Decant 3ml</span>
+                  <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-[9px] text-center py-0.5">Decant 2/3ml</span>
                 </button>
                 <button onClick={() => setMainImage('/images/decant1.png')} className="w-20 h-20 rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#c9a96a] relative">
                   <img src="/images/decant1.png" className="w-full h-full object-cover" />
-                  <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-[9px] text-center py-0.5">Decant 5ml</span>
+                  <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-[9px] text-center py-0.5">Decant 5/10ml</span>
                 </button>
               </div>
             </div>
@@ -818,88 +845,62 @@ const ProductDetail = () => {
               <div><label className="block text-sm font-medium mb-3 text-[#1a1410]">TAMANHO</label>
                 <div className="flex gap-3 flex-wrap">
                   <button 
-                    onClick={() => setSelectedSize('100ml')} 
-                    className={`px-5 py-2.5 rounded-lg border-2 transition-all ${selectedSize === '100ml' ? 'border-[#c9a96a] bg-[#f7f3ec] text-[#c9a96a] font-semibold shadow-md' : 'border-gray-300 hover:border-[#c9a96a]/50'}`}
+                    onClick={() => setSelectedSize('2ml')} 
+                    className={`px-5 py-2.5 rounded-lg border-2 transition-all ${selectedSize === '2ml' ? 'border-[#c9a96a] bg-[#f7f3ec] text-[#c9a96a] font-semibold shadow-md' : 'border-gray-300 hover:border-[#c9a96a]/50'}`}
                   >
-                    100ml - {fixedPrice100ml.toFixed(2)} €
+                    2ml - Decant (Kit 10un)
                   </button>
                   <button 
                     onClick={() => setSelectedSize('3ml')} 
                     className={`px-5 py-2.5 rounded-lg border-2 transition-all ${selectedSize === '3ml' ? 'border-[#c9a96a] bg-[#f7f3ec] text-[#c9a96a] font-semibold shadow-md' : 'border-gray-300 hover:border-[#c9a96a]/50'}`}
                   >
-                    3ml - Decant (Kit)
+                    3ml - Decant (Kit 10un)
                   </button>
                   <button 
                     onClick={() => setSelectedSize('5ml')} 
                     className={`px-5 py-2.5 rounded-lg border-2 transition-all ${selectedSize === '5ml' ? 'border-[#c9a96a] bg-[#f7f3ec] text-[#c9a96a] font-semibold shadow-md' : 'border-gray-300 hover:border-[#c9a96a]/50'}`}
                   >
-                    5ml - Decant (Kit)
+                    5ml - Decant (Kit 10un)
+                  </button>
+                  <button 
+                    onClick={() => setSelectedSize('10ml')} 
+                    className={`px-5 py-2.5 rounded-lg border-2 transition-all ${selectedSize === '10ml' ? 'border-[#c9a96a] bg-[#f7f3ec] text-[#c9a96a] font-semibold shadow-md' : 'border-gray-300 hover:border-[#c9a96a]/50'}`}
+                  >
+                    10ml - Decant (Kit 10un)
                   </button>
                 </div>
-              </div>
-              
-              <div className="border-t border-gray-100 pt-4">
-                <span className="text-3xl font-bold text-[#1a1410]">
-                  {fixedPrice100ml.toFixed(2)} €
-                </span>
-                <p className="text-sm text-[#1a1410]/50 mt-1">IVA incluído - Frasco 100ml</p>
               </div>
               
               {isDecant && (
                 <div className="bg-gradient-to-r from-[#1a1410] to-[#0a0807] p-4 rounded-xl border border-[#c9a96a]/20">
-                  <p className="text-[#e8c98a] font-semibold text-lg">🎁 Decant de {selectedSize}</p>
-                  <p className="text-[#c9a96a]/80 text-sm mt-1">
-                    Este decant faz parte do kit! Escolha a quantidade:
+                  <img src={getDecantImage(selectedSize)} alt={`Decant ${selectedSize}`} className="w-16 h-16 object-contain mx-auto mb-2" />
+                  <p className="text-[#e8c98a] font-semibold text-lg text-center">🎁 Kit de Decants {selectedSize}</p>
+                  <p className="text-[#c9a96a]/80 text-sm text-center mt-1">
+                    10 decants de {selectedSize} por apenas <span className="font-bold text-[#e8c98a]">{kitPrice.toFixed(2)} €</span>
                   </p>
-                  <div className="mt-3 space-y-2">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-[#c9a96a]/80">3 unidades</span>
-                      <span className="text-[#e8c98a] font-bold">{KIT_PRICES[selectedSize]?.[3]?.toFixed(2)} €</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-[#c9a96a]/80">6 unidades</span>
-                      <span className="text-[#e8c98a] font-bold">{KIT_PRICES[selectedSize]?.[6]?.toFixed(2)} €</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-[#c9a96a]/80">12 unidades</span>
-                      <span className="text-[#e8c98a] font-bold">{KIT_PRICES[selectedSize]?.[12]?.toFixed(2)} €</span>
-                    </div>
-                  </div>
-                  <p className="text-[#c9a96a]/60 text-xs mt-3">*Os decants não são vendidos individualmente, apenas nos kits acima.</p>
-                  {!selectedKit ? (
-                    <button onClick={handleAddToKit} className="mt-4 w-full py-2 bg-gradient-to-r from-[#c9a96a] to-[#e8c98a] text-black rounded-lg font-semibold hover:shadow-lg transition-all">
-                      SELECIONAR KIT
-                    </button>
-                  ) : kitSize !== selectedSize ? (
-                    <div className="mt-3 flex items-center gap-2 text-red-400 text-sm bg-red-400/10 p-2 rounded-lg">
-                      <span>⚠️</span> Seu kit atual é para decants de {kitSize}. Clique em "SELECIONAR KIT" para trocar.
-                    </div>
-                  ) : (
-                    <button onClick={handleAddToKit} className="mt-4 w-full py-2 bg-gradient-to-r from-[#c9a96a] to-[#e8c98a] text-black rounded-lg font-semibold hover:shadow-lg transition-all">
-                      ADICIONAR AO KIT ({selectedPerfumes?.length || 0}/{kitQuantity})
-                    </button>
-                  )}
+                  <p className="text-[#c9a96a]/60 text-xs text-center mt-2">*Os decants são vendidos apenas em kits de 10 unidades.</p>
                 </div>
               )}
               
-              <div className="flex gap-3">
-                {!isDecant && (
-                  <div className="flex items-center border-2 border-gray-200 rounded-lg">
-                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-4 py-2.5 hover:bg-gray-50"><Minus size={16} /></button>
-                    <span className="w-12 text-center font-medium">{quantity}</span>
-                    <button onClick={() => setQuantity(quantity + 1)} className="px-4 py-2.5 hover:bg-gray-50"><Plus size={16} /></button>
-                  </div>
-                )}
-                {!isDecant ? (
-                  <button onClick={handleAddToCartClick} className="flex-1 bg-[#c9a96a] text-black py-3 rounded-lg font-semibold hover:bg-[#e8c98a] transition-all flex items-center justify-center gap-2">
-                    <ShoppingCart size={18} /> COMPRAR AGORA
-                  </button>
-                ) : (
-                  <button onClick={handleAddToKit} className="flex-1 bg-gradient-to-r from-[#c9a96a] to-[#e8c98a] text-black py-3 rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2">
-                    <img src="/images/decant.png" alt="Kit" className="w-5 h-5 object-contain" />
-                    SELECIONAR KIT
-                  </button>
-                )}
+              {/* Botão principal - Adicionar ao Kit ou Comprar */}
+              <button 
+                onClick={handleAddToCartClick}
+                className="w-full py-4 bg-gradient-to-r from-[#c9a96a] to-[#e8c98a] text-black rounded-xl font-bold text-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+              >
+                <ShoppingCart size={20} />
+                {isDecant ? `ADICIONAR AO KIT (${selectedPerfumes?.length || 0}/10)` : 'SOLICITAR ORÇAMENTO'}
+              </button>
+              
+              {/* Botão de Encomenda para o frasco de 100ml */}
+              <div className="bg-gradient-to-r from-[#1a1410] to-[#0a0807] p-4 rounded-xl border border-[#c9a96a]/20">
+                <p className="text-[#e8c98a] font-semibold text-lg text-center">📦 Frasco Original 100ml</p>
+                <p className="text-[#c9a96a]/80 text-sm text-center mt-1">
+                  Produto disponível sob encomenda.
+                </p>
+                <p className="text-[#c9a96a]/60 text-xs text-center mt-2">*Consulte preço e disponibilidade via WhatsApp.</p>
+                <button onClick={handleWhatsAppEncomenda} className="mt-4 w-full py-3 bg-gradient-to-r from-[#c9a96a] to-[#e8c98a] text-black rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                  ENCOMENDAR PELO WHATSAPP
+                </button>
               </div>
               
               <div className="flex gap-3"><button onClick={handleToggleFavorite} className={`flex-1 py-3 rounded-lg border-2 flex items-center justify-center gap-2 transition-all ${isFavorite ? 'border-red-400 bg-red-50 text-red-500' : 'border-gray-300 hover:border-red-300'}`}><Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500' : ''}`} />{isFavorite ? 'Favoritado' : 'Favoritar'}</button></div>
@@ -931,11 +932,24 @@ const ProductDetail = () => {
             )}
             {reviews.map((review) => (
               <div key={review.id} className="border-b border-gray-100 pb-5 mb-5">
-                <div className="flex items-center gap-3 mb-2">
-                  {review.userPhoto ? <img src={review.userPhoto} className="w-10 h-10 rounded-full object-cover" /> : <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#c9a96a]/20 to-[#c9a96a]/10 flex items-center justify-center"><User size={20} className="text-[#c9a96a]" /></div>}
-                  <div><p className="font-semibold text-[#1a1410]">{review.userName}</p><div className="flex gap-1">{[1,2,3,4,5].map((i) => (<Star key={i} size={12} className={i <= review.rating ? 'fill-[#c9a96a] text-[#c9a96a]' : 'text-gray-300'} />))}</div></div>
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    {review.userPhoto ? <img src={review.userPhoto} className="w-10 h-10 rounded-full object-cover" /> : <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#c9a96a]/20 to-[#c9a96a]/10 flex items-center justify-center"><User size={20} className="text-[#c9a96a]" /></div>}
+                    <div>
+                      <p className="font-semibold text-[#1a1410]">{review.userName}</p>
+                      <div className="flex gap-1">{[1,2,3,4,5].map((i) => (<Star key={i} size={12} className={i <= review.rating ? 'fill-[#c9a96a] text-[#c9a96a]' : 'text-gray-300'} />))}</div>
+                    </div>
+                  </div>
+                  {user && user.uid === review.userId && (
+                    <button 
+                      onClick={() => handleDeleteLocalReview(review.id, review.userId)}
+                      className="text-xs text-red-500 hover:text-red-700 transition-colors p-1 flex items-center gap-1"
+                    >
+                      <Trash2 size={14} /> Excluir
+                    </button>
+                  )}
                 </div>
-                <p className="text-[#1a1410]/80 text-sm">{review.comment}</p>
+                <p className="text-[#1a1410]/80 text-sm mt-2">{review.comment}</p>
                 <button onClick={async () => { await markHelpful(review.id); const newReviews = await getProductReviews(id); if (newReviews.success) setReviews(newReviews.reviews); }} className="text-xs text-[#1a1410]/40 hover:text-[#c9a96a] mt-2">👍 Útil ({review.helpful || 0})</button>
               </div>
             ))}
@@ -996,13 +1010,13 @@ const ProductCard = ({ p, dark = false, index, category }) => {
         <img src={isHovered && p.hoverImage ? p.hoverImage : p.image} alt={p.name} className="max-h-[90%] max-w-[90%] object-contain transition-all duration-500 group-hover:scale-105" />
       </div>
       <h3 className={`font-display text-lg lg:text-xl mt-4 mb-1 text-center ${dark ? "text-[#e8d6a8]" : "text-[#1a1410]"}`}>{p.name}</h3>
-      <p className={`text-sm tracking-wider ${dark ? "text-[#c9a96a]/70" : "text-neutral-500"}`}>{p.price}</p>
+      <p className={`text-sm tracking-wider ${dark ? "text-[#c9a96a]/70" : "text-neutral-500"}`}>Sob encomenda</p>
     </div>
   );
 };
 
 // =============================================
-// BEST SELLERS
+// BEST SELLERS (SEM BOTÃO COMPRAR TUDO)
 // =============================================
 const BestSellers = () => {
   if (!content?.bestSellers) return null;
@@ -1010,10 +1024,9 @@ const BestSellers = () => {
     <section id="mais-vendidos" className="bg-[#f7f3ec] py-28 lg:py-36">
       <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
         <div className="text-center mb-20"><p className="text-neutral-500 tracking-[0.4em] text-xs mb-5">{content.bestSellers.kicker}</p><h2 className="font-display text-[#1a1410] text-5xl lg:text-6xl">{content.bestSellers.titleLine1} <span className="italic text-[#7a5a2e]">{content.bestSellers.titleItalic}</span></h2></div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 lg:gap-6 mb-16">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 lg:gap-6">
           {content.bestSellers.products?.map((p, i) => (<ProductCard key={i} p={p} />))}
         </div>
-        <div className="flex justify-center"><button onClick={() => toast.success("Catálogo completo em breve")} className="px-14 py-4 border border-[#1a1410] text-[#1a1410] tracking-[0.3em] text-xs hover:bg-[#1a1410] hover:text-[#e8c98a] transition-all">{content.bestSellers.cta.toUpperCase()}</button></div>
       </div>
     </section>
   );
@@ -1177,17 +1190,12 @@ function App() {
   const [isKitOpen, setIsKitOpen] = useState(false);
   const [selectedKit, setSelectedKit] = useState(false);
   const [kitSize, setKitSize] = useState(null);
-  const [kitQuantity, setKitQuantity] = useState(0);
   const [selectedPerfumes, setSelectedPerfumes] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [favoritesCount, setFavoritesCount] = useState(0);
   const [userReviews, setUserReviews] = useState([]);
 
-  const kitPrice = (() => {
-    if (!kitSize || !kitQuantity) return '0';
-    return KIT_PRICES[kitSize]?.[kitQuantity]?.toFixed(2) || '0';
-  })();
-  
+  const kitPrice = kitSize ? KIT_PRICES[kitSize].toFixed(2) : '0';
   const kitCount = selectedPerfumes.length;
 
   useEffect(() => {
@@ -1261,7 +1269,6 @@ function App() {
 
   const addToCart = async (product, price, size, quantity) => {
     if (!user) return;
-    
     const result = await addToCartDB(user.uid, product.id, product.name, product.image, price, size, quantity);
     if (result.success) {
       await loadCart(user.uid);
@@ -1274,14 +1281,9 @@ function App() {
   const handleUpdateQuantity = async (cartId, currentQuantity, delta) => {
     const newQuantity = currentQuantity + delta;
     if (newQuantity < 1) return;
-    
     const result = await updateCartQuantityDB(cartId, newQuantity);
     if (result.success) {
-      setCart(prevCart => 
-        prevCart.map(item => 
-          item.id === cartId ? { ...item, quantity: newQuantity } : item
-        )
-      );
+      setCart(prevCart => prevCart.map(item => item.id === cartId ? { ...item, quantity: newQuantity } : item));
       setCartCount(prevCount => prevCount + delta);
     } else {
       toast.error('Erro ao atualizar quantidade');
@@ -1293,23 +1295,18 @@ function App() {
       toast.error('Faça login para remover itens');
       return;
     }
-    
     if (!cartId) {
       toast.error('ID do item inválido');
       return;
     }
-    
     try {
       const cartRef = doc(db, "cart", cartId);
       await deleteDoc(cartRef);
-      
       const removedItem = cart.find(item => item.id === cartId);
       setCart(prevCart => prevCart.filter(item => item.id !== cartId));
-      
       if (removedItem) {
         setCartCount(prevCount => prevCount - (removedItem.quantity || 0));
       }
-      
       toast.success('Item removido do carrinho');
     } catch (error) {
       console.error('Erro detalhado ao remover item:', error);
@@ -1340,13 +1337,9 @@ function App() {
     message += "*Cliente:* " + (user?.displayName || user?.email || 'Cliente') + "\n";
     message += "*Email:* " + (user?.email || 'Não informado') + "\n";
     message += "*Data:* " + new Date().toLocaleString('pt-PT') + "\n\n";
-    message += `*KIT ${kitSize?.toUpperCase()} - ${kitQuantity} UNIDADES*\n`;
-    message += `*Valor do Kit:* € ${kitPrice}\n\n`;
-    message += "*PERFUMES SELECIONADOS:*\n";
+    message += `*KIT ${kitSize?.toUpperCase()} - 10 DECANTS*\n*Valor do Kit:* € ${kitPrice}\n\n*PERFUMES SELECIONADOS:*\n`;
     selectedPerfumes.forEach((p, index) => { message += `${index + 1}. ${p.name}\n`; });
-    message += `\n*Total de perfumes:* ${selectedPerfumes.length}/${kitQuantity}\n`;
-    message += `*Total do pedido:* € ${kitPrice}\n\n`;
-    message += "Aguardando confirmação do pedido. Obrigado!";
+    message += `\n*Total de perfumes:* ${selectedPerfumes.length}/10\n*Total do pedido:* € ${kitPrice}\n\nAguardando confirmação do pedido. Obrigado!`;
     window.open("https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(message), '_blank');
     toast.success('Redirecionando para o WhatsApp...');
   };
@@ -1356,7 +1349,7 @@ function App() {
     try {
       const favoriteData = {
         userId: user.uid, productId: String(product.id), productName: product.name,
-        productImage: product.image, productPrice: product.price || product.priceValue,
+        productImage: product.image, productPrice: null,
         category: product.category, createdAt: new Date().toISOString()
       };
       const docRef = doc(collection(db, "favorites"));
@@ -1372,17 +1365,11 @@ function App() {
   const removeFromFavoritesGlobal = async (productId) => {
     if (!user) return;
     try {
-      const q = query(
-        collection(db, "favorites"), 
-        where("userId", "==", user.uid), 
-        where("productId", "==", String(productId))
-      );
+      const q = query(collection(db, "favorites"), where("userId", "==", user.uid), where("productId", "==", String(productId)));
       const querySnapshot = await getDocs(q);
-      
       for (const docSnapshot of querySnapshot.docs) {
         await deleteDoc(docSnapshot.ref);
       }
-      
       await loadFavorites(user.uid);
       toast.success('Removido dos favoritos');
     } catch (error) { 
@@ -1392,12 +1379,12 @@ function App() {
   };
 
   const addToKit = (product) => {
-    if (!kitSize || !kitQuantity) { 
+    if (!kitSize) { 
       toast.error('Selecione um kit primeiro'); 
       return false; 
     }
-    if (selectedPerfumes.length >= kitQuantity) { 
-      toast.error(`Limite de ${kitQuantity} perfumes atingido`); 
+    if (selectedPerfumes.length >= 10) { 
+      toast.error(`Limite de 10 perfumes atingido`); 
       return false; 
     }
     if (selectedPerfumes.find(p => p.id === product.id)) { 
@@ -1405,13 +1392,41 @@ function App() {
       return false; 
     }
     setSelectedPerfumes([...selectedPerfumes, { id: product.id, name: product.name, image: product.image, size: kitSize }]);
-    toast.success(product.name + ' adicionado ao kit! (' + (selectedPerfumes.length + 1) + '/' + kitQuantity + ')');
+    toast.success(product.name + ' adicionado ao kit! (' + (selectedPerfumes.length + 1) + '/10)');
     return true;
   };
 
   const removeFromKit = (id) => { setSelectedPerfumes(selectedPerfumes.filter(p => p.id !== id)); toast.info('Perfume removido do kit'); };
   const clearKit = () => { setSelectedPerfumes([]); toast.info('Kit limpo'); };
-  const resetKit = () => { setSelectedKit(false); setKitSize(null); setKitQuantity(0); setSelectedPerfumes([]); toast.info('Kit resetado'); };
+  const resetKit = () => { setSelectedKit(false); setKitSize(null); setSelectedPerfumes([]); toast.info('Kit resetado'); };
+
+  const handleDeleteReview = async (reviewId, reviewUserId) => {
+    if (!user) {
+      toast.error('Faça login para excluir avaliações');
+      return;
+    }
+    
+    if (user.uid !== reviewUserId) {
+      toast.error('Você só pode excluir suas próprias avaliações');
+      return;
+    }
+    
+    const confirmed = window.confirm('Tem certeza que deseja excluir esta avaliação?');
+    if (!confirmed) return;
+    
+    try {
+      const result = await deleteReview(reviewId, user.uid);
+      if (result.success) {
+        toast.success('Avaliação excluída com sucesso!');
+        await loadUserReviews(user.uid);
+      } else {
+        toast.error('Erro ao excluir avaliação');
+      }
+    } catch (error) {
+      console.error('Erro:', error);
+      toast.error('Erro ao excluir avaliação');
+    }
+  };
 
   return (
     <AppContext.Provider value={{
@@ -1420,10 +1435,11 @@ function App() {
       handleUpdateQuantity, handleRemoveFromCart, getCartTotal, addToCart,
       getCartItemsForWhatsApp, sendKitToWhatsApp,
       isKitOpen, openKit: () => setIsKitOpen(true), closeKit: () => setIsKitOpen(false),
-      selectedKit, setSelectedKit, kitSize, setKitSize, kitQuantity, setKitQuantity,
+      selectedKit, setSelectedKit, kitSize, setKitSize,
       selectedPerfumes, addToKit, removeFromKit, clearKit, resetKit, kitPrice, kitCount,
       favorites, favoritesCount, addToFavoritesGlobal, removeFromFavoritesGlobal,
-      userReviews, loadUserReviews: () => user && loadUserReviews(user.uid)
+      userReviews, loadUserReviews: () => user && loadUserReviews(user.uid),
+      handleDeleteReview
     }}>
       <div className="bg-[#0a0807] min-h-screen">
         <Toaster position="bottom-right" toastOptions={{ style: { background: "#1a1410", color: "#e8c98a", border: "1px solid rgba(201,169,106,0.3)" } }} />
