@@ -15,7 +15,7 @@ const KIT_PRICES = {
   '10ml': 69.99
 };
 
-// Função para pegar imagem do decant (usa as imagens existentes)
+// Função para pegar imagem do decant
 const getDecantImage = (size) => {
   switch(size) {
     case '2ml':
@@ -357,7 +357,7 @@ const KitDrawer = () => {
 };
 
 // =============================================
-// PAGINA DE FAVORITOS
+// PAGINA DE FAVORITOS (SEM PREÇO)
 // =============================================
 const FavoritesPage = () => {
   const { user, favorites, removeFromFavoritesGlobal, handleLogin } = useApp();
@@ -435,7 +435,7 @@ const FavoritesPage = () => {
                 </div>
                 <div className="p-4">
                   <h3 className="font-medium text-[#1a1410] truncate">{item.productName}</h3>
-                  <p className="text-[#c9a96a] font-semibold mt-1">{item.productPrice || 'Sob encomenda'}</p>
+                  {/* Preço removido - não exibir */}
                   <button onClick={() => handleProductClick(item)} className="w-full mt-3 py-2 border border-[#c9a96a] text-[#c9a96a] rounded-lg text-sm hover:bg-[#c9a96a] hover:text-black">Ver detalhes</button>
                 </div>
               </div>
@@ -570,7 +570,6 @@ const ProductDetail = () => {
   const [showKitModal, setShowKitModal] = useState(false);
   const { 
     user, 
-    addToCart,
     addToKit, 
     selectedKit, 
     setSelectedKit, 
@@ -731,28 +730,9 @@ const ProductDetail = () => {
   };
 
   const handleWhatsAppEncomenda = () => {
-    const message = `*ENCOMENDA - NORAYA PERFUMES*\n\n*Produto:* ${product?.name}\n*Tamanho:* 100ml (Frasco original)\n*Preço:* Sob consulta\n\n*Cliente:* ${user?.displayName || user?.email || 'Cliente'}\n\nGostaria de saber o valor e disponibilidade deste perfume.`;
+    const message = `*ENCOMENDA - NORAYA PERFUMES*\n\n*Produto:* ${product?.name}\n*Tamanho:* Perfume Original\n*Preço:* Sob consulta\n\n*Cliente:* ${user?.displayName || user?.email || 'Cliente'}\n\nGostaria de saber o valor e disponibilidade deste perfume.`;
     window.open("https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(message), '_blank');
     toast.success('Redirecionando para o WhatsApp...');
-  };
-
-  const handleAddToCartClick = () => {
-    if (!user) {
-      toast.error('Faça login para comprar');
-      handleLogin();
-      return;
-    }
-    if (!selectedSize) {
-      toast.error('Selecione um tamanho');
-      return;
-    }
-    // Para decants, adiciona ao kit em vez do carrinho
-    if (selectedSize === '2ml' || selectedSize === '3ml' || selectedSize === '5ml' || selectedSize === '10ml') {
-      handleAddToKit();
-      return;
-    }
-    // Para outros produtos (se houver)
-    toast.error('Este produto está disponível apenas sob encomenda');
   };
 
   const handleDeleteLocalReview = async (reviewId, reviewUserId) => {
@@ -795,7 +775,6 @@ const ProductDetail = () => {
 
   const isDecant = selectedSize && ['2ml', '3ml', '5ml', '10ml'].includes(selectedSize);
   const kitPrice = selectedSize ? KIT_PRICES[selectedSize] : 0;
-  const cartButtonText = isDecant ? `ADICIONAR AO KIT (${selectedPerfumes?.length || 0}/10)` : 'COMPRAR AGORA';
 
   return (
     <div className="bg-[#f7f3ec] min-h-screen pb-16 pt-24">
@@ -882,18 +861,18 @@ const ProductDetail = () => {
                 </div>
               )}
               
-              {/* Botão principal - Adicionar ao Kit ou Comprar */}
+              {/* Botão principal - MONTE SEU KIT */}
               <button 
-                onClick={handleAddToCartClick}
+                onClick={handleAddToKit}
                 className="w-full py-4 bg-gradient-to-r from-[#c9a96a] to-[#e8c98a] text-black rounded-xl font-bold text-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
               >
                 <ShoppingCart size={20} />
-                {isDecant ? `ADICIONAR AO KIT (${selectedPerfumes?.length || 0}/10)` : 'SOLICITAR ORÇAMENTO'}
+                MONTE SEU KIT
               </button>
               
-              {/* Botão de Encomenda para o frasco de 100ml */}
+              {/* Seção do Perfume Original */}
               <div className="bg-gradient-to-r from-[#1a1410] to-[#0a0807] p-4 rounded-xl border border-[#c9a96a]/20">
-                <p className="text-[#e8c98a] font-semibold text-lg text-center">📦 Frasco Original 100ml</p>
+                <p className="text-[#e8c98a] font-semibold text-lg text-center">📦 Perfume Original</p>
                 <p className="text-[#c9a96a]/80 text-sm text-center mt-1">
                   Produto disponível sob encomenda.
                 </p>
@@ -961,7 +940,7 @@ const ProductDetail = () => {
 };
 
 // =============================================
-// PRODUCT CARD
+// PRODUCT CARD (SEM "Sob encomenda")
 // =============================================
 const ProductCard = ({ p, dark = false, index, category }) => {
   const navigate = useNavigate();
@@ -1010,13 +989,12 @@ const ProductCard = ({ p, dark = false, index, category }) => {
         <img src={isHovered && p.hoverImage ? p.hoverImage : p.image} alt={p.name} className="max-h-[90%] max-w-[90%] object-contain transition-all duration-500 group-hover:scale-105" />
       </div>
       <h3 className={`font-display text-lg lg:text-xl mt-4 mb-1 text-center ${dark ? "text-[#e8d6a8]" : "text-[#1a1410]"}`}>{p.name}</h3>
-      <p className={`text-sm tracking-wider ${dark ? "text-[#c9a96a]/70" : "text-neutral-500"}`}>Sob encomenda</p>
     </div>
   );
 };
 
 // =============================================
-// BEST SELLERS (SEM BOTÃO COMPRAR TUDO)
+// BEST SELLERS
 // =============================================
 const BestSellers = () => {
   if (!content?.bestSellers) return null;
