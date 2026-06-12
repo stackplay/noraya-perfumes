@@ -31,6 +31,100 @@ const getDecantImage = (size) => {
   }
 };
 
+// Mapeamento de preços por nome de produto
+const PRODUCT_PRICES = {
+  'Emaan': 34.90,
+  'Asad Bourbon': 34.90,
+  '9PM': 39.90,
+  'Spectre': 39.90,
+  'Yara Candy': 34.90,
+  'Yara Moi': 29.90,
+  'Yara Rosa': 29.90,
+  'Nebras': 39.90,
+  'Qimmah': 29.90,
+  'Yara Elixir': 34.90,
+  'Pride Tharwah': 39.90,
+  'Musamam Black': 54.90,
+  'Angham': 39.90,
+  'Yara Tous': 32.90,
+  'Teriaq Intense': 44.90,
+  'Ansaam Gold': 39.90,
+  'Fakhar Pride': 34.90,
+  'Mayar Cherry': 39.90,
+  'Ameerat Al Arab': 29.90,
+  'Azeez': 29.90,
+  'Victoria': 44.90,
+  'Khamrah': 44.90,
+  'Asad Zanzibar': 34.90,
+  'Asad Man': 29.90,
+  'Asad Elixir': 39.90,
+  'His Confession': 44.90,
+  'Bade\'e Al Oud Amethyst': 39.90,
+  'Angham Supremacy': 39.90,
+  'Khamrah Qahwa': 49.90,
+  'Maahir Black': 39.90,
+  'Salvo': 24.90,
+  'Musamam Black Intense': 54.90,
+  'Fakhar Nude': 34.90,
+  'Qaed Al Fursan': 29.90,
+  'Qaed Unlimited': 29.90,
+  'Ana Abiyedh': 29.90,
+  'Vulcan Feu': 44.90,
+  'Al Noble Wazeer': 34.90,
+  'Sabah Al Ward': 29.90,
+  'Ansaam Woman': 39.90,
+  'Azeed': 29.90,
+  'Ishq Al Shuyukh': 34.90,
+  'Emaanati Mughal': 34.90,
+  'Maahir Legacy': 39.90,
+  'The Kingdom': 44.90,
+  'Eclaire': 44.90,
+  'Athena': 34.90,
+  'Al Ward': 29.90,
+  'Bade\'e Al Oud Noble Blush': 39.90,
+  'Nudo Sweet Berries': 29.90,
+  'Maison Alhambra Salvo': 24.90,
+  'Al Wataniah Sophia': 24.90,
+  'Club de Nuit Intense': 44.90,
+  'Oud For Glory': 34.90,
+  'Maison Barakkat Rouge 540': 34.90,
+  'Pride Tharwah Gold': 44.90,
+  'Musamam White Intense': 54.90,
+  'Lattafa Yara Rosa 100ml': 29.90,
+  'Lattafa Asad Man 100ml': 29.90,
+  'Lattafa Khamrah 100ml': 44.90,
+  'Lattafa Asad Bourbon 100ml': 34.90,
+  'Armaf Club de Nuit Intense Man': 44.90,
+  'Fakhar Black': 29.90,
+  'Lattafa Eclaire 100ml': 44.90,
+  'Lattafa Nebras Unissex 100ml': 39.90
+};
+
+// Função para obter preço do produto
+const getProductPrice = (productName) => {
+  if (!productName) return null;
+  // Tenta encontrar pelo nome exato
+  if (PRODUCT_PRICES[productName]) {
+    return PRODUCT_PRICES[productName];
+  }
+  // Tenta encontrar por correspondência parcial
+  for (const [key, value] of Object.entries(PRODUCT_PRICES)) {
+    if (productName.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(productName.toLowerCase())) {
+      return value;
+    }
+  }
+  return null;
+};
+
+// Função para exibir preço ou mensagem de indisponível
+const getProductPriceDisplay = (productName) => {
+  const price = getProductPrice(productName);
+  if (price) {
+    return `${price.toFixed(2)} €`;
+  }
+  return 'Em breve';
+};
+
 const AppContext = createContext();
 export const useApp = () => useContext(AppContext);
 
@@ -357,7 +451,7 @@ const KitDrawer = () => {
 };
 
 // =============================================
-// PAGINA DE FAVORITOS (SEM PREÇO)
+// PAGINA DE FAVORITOS (COM PREÇOS OU "EM BREVE")
 // =============================================
 const FavoritesPage = () => {
   const { user, favorites, removeFromFavoritesGlobal, handleLogin } = useApp();
@@ -435,7 +529,7 @@ const FavoritesPage = () => {
                 </div>
                 <div className="p-4">
                   <h3 className="font-medium text-[#1a1410] truncate">{item.productName}</h3>
-                  {/* Preço removido - não exibir */}
+                  <p className="text-[#c9a96a] font-semibold mt-1">{getProductPriceDisplay(item.productName)}</p>
                   <button onClick={() => handleProductClick(item)} className="w-full mt-3 py-2 border border-[#c9a96a] text-[#c9a96a] rounded-lg text-sm hover:bg-[#c9a96a] hover:text-black">Ver detalhes</button>
                 </div>
               </div>
@@ -775,6 +869,7 @@ const ProductDetail = () => {
 
   const isDecant = selectedSize && ['2ml', '3ml', '5ml', '10ml'].includes(selectedSize);
   const kitPrice = selectedSize ? KIT_PRICES[selectedSize] : 0;
+  const productPrice = getProductPrice(product.name);
 
   return (
     <div className="bg-[#f7f3ec] min-h-screen pb-16 pt-24">
@@ -849,6 +944,13 @@ const ProductDetail = () => {
                   </button>
                 </div>
               </div>
+              
+              {productPrice && (
+                <div className="border-t border-gray-100 pt-4">
+                  <span className="text-3xl font-bold text-[#1a1410]">{productPrice.toFixed(2)} €</span>
+                  <p className="text-sm text-[#1a1410]/50 mt-1">Preço sugerido - Frasco 100ml</p>
+                </div>
+              )}
               
               {isDecant && (
                 <div className="bg-gradient-to-r from-[#1a1410] to-[#0a0807] p-4 rounded-xl border border-[#c9a96a]/20">
@@ -940,7 +1042,7 @@ const ProductDetail = () => {
 };
 
 // =============================================
-// PRODUCT CARD (SEM "Sob encomenda")
+// PRODUCT CARD (COM PREÇOS OU "EM BREVE")
 // =============================================
 const ProductCard = ({ p, dark = false, index, category }) => {
   const navigate = useNavigate();
@@ -989,6 +1091,7 @@ const ProductCard = ({ p, dark = false, index, category }) => {
         <img src={isHovered && p.hoverImage ? p.hoverImage : p.image} alt={p.name} className="max-h-[90%] max-w-[90%] object-contain transition-all duration-500 group-hover:scale-105" />
       </div>
       <h3 className={`font-display text-lg lg:text-xl mt-4 mb-1 text-center ${dark ? "text-[#e8d6a8]" : "text-[#1a1410]"}`}>{p.name}</h3>
+      <p className={`text-sm tracking-wider ${dark ? "text-[#c9a96a]/70" : "text-neutral-500"}`}>{getProductPriceDisplay(p.name)}</p>
     </div>
   );
 };
@@ -1327,7 +1430,7 @@ function App() {
     try {
       const favoriteData = {
         userId: user.uid, productId: String(product.id), productName: product.name,
-        productImage: product.image, productPrice: null,
+        productImage: product.image, productPrice: getProductPrice(product.name),
         category: product.category, createdAt: new Date().toISOString()
       };
       const docRef = doc(collection(db, "favorites"));
