@@ -15,7 +15,8 @@ export const nav = [
   { label: "MAIS VENDIDOS", href: "#mais-vendidos" },
   { label: "PARA ELA", href: "#femininos" },
   { label: "PARA ELE", href: "#masculinos" },
-  { label: "UNISSEX", href: "#tudo" },
+  { label: "UNISSEX", href: "#unissex" },
+  { label: "DESODORIZANTES", href: "#desodorizantes" },
 ];
 
 export const hero = {
@@ -60,13 +61,11 @@ export const feminine = {
   titleItalic: "Ela",
   description: "Fragrâncias delicadas e envolventes para momentos especiais.",
   products: [
-    // ============ YARA ROSA 100ml (ERA 50ml, ALTERADO) ============
     { id: 1, name: "Lattafa Yara Rosa 100ml", price: "39,99 €", oldPrice: "44,99 €", discount: "11%", image: "/images/Yara_50ml_1.png", hoverImage: "/images/Yara_50ml_1.png", brandLogo: "/images/logolattafa.png", tagline: "Abertura enérgica e vibrante", fullDescription: "YARA Lattafa Rosa Eau de Parfum para mulher.", fragranceType: "Floral Frutal", bestFor: "Uso diário", launchYear: "2023", inspiration: "Fragrância original Lattafa", notes: { topo: "Orquídea, Heliotrópio, Tangerina", coracao: "Acorde Gourmand, Frutas tropicais", base: "Baunilha, Almíscar, Sândalo" }, sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 39.99 }], sku: "6291108735462", ean: "6291108735462", rating: 0, reviews: 0 },
     { id: 2, name: "Lattafa Nebras Unissex 100ml", price: "44,99 €", oldPrice: "49,99 €", discount: "10%", image: "/images/Lattafa_Nebras_1.png", hoverImage: "/images/Lattafa_Nebras_2.png", brandLogo: "/images/logolattafa.png", tagline: "Obra-prima olfativa", fullDescription: "Lattafa Pride Nebras Eau de Parfum.", fragranceType: "Oriental Gourmand", bestFor: "Homens e mulheres", launchYear: "2022", inspiration: "Fragrância original Lattafa", notes: { topo: "Bagas vermelhas, Tangerina", coracao: "Baunilha, Raiz do cacau, Rosa", base: "Cumaru, Âmbar, Almíscar, Açúcar" }, sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 44.99 }], sku: "6291108735435", ean: "6291108735435", rating: 0, reviews: 0 },
     { id: 3, name: "Lattafa Opulent Dubai 100ml", price: "34,90 €", oldPrice: "39,90 €", discount: "13%", image: "/images/Lattafa_Opulent_Dubai_1.png", hoverImage: "/images/Lattafa_Opulent_Dubai_2.png", brandLogo: "/images/logolattafa.png", tagline: "Luxo e sofisticação", fullDescription: "Lattafa Opulent Dubai.", fragranceType: "Oriental Floral Gourmand", bestFor: "Ocasiões especiais", launchYear: "2025", inspiration: "Fragrância original Lattafa", notes: { topo: "Bergamota, Tangerina, Pêssego", coracao: "Jasmim, Rosa, Açafrão, Chocolate Dubai", base: "Âmbar, Oud, Baunilha" }, sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 34.90 }], sku: "6291108735452", ean: "6291108735452", rating: 5, reviews: 3 },
     { id: 4, name: "Lattafa Eclaire 100ml", price: "54,90 €", oldPrice: "59,90 €", discount: "8%", image: "/images/Lattafa_Eclaire_1.png", hoverImage: "/images/Lattafa_Eclaire_2.png", brandLogo: "/images/logolattafa.png", tagline: "Doçura envolvente", fullDescription: "Eclaire Lattafa.", fragranceType: "Gourmand", bestFor: "Uso diário", launchYear: "2024", inspiration: "Dupe de Bianco Latte", notes: { topo: "Caramelo, Açúcar, Leite", coracao: "Mel, Flores brancas", base: "Baunilha, Praliné, Almíscar" }, sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 54.90 }], sku: "6291108735453", ean: "6291108735453", rating: 5, reviews: 1 },
     { id: 5, name: "Lattafa Qimmah 100ml", price: "39,99 €", oldPrice: "44,99 €", discount: "11%", image: "/images/Qimmah_1.png", hoverImage: "/images/Qimmah_2.png", brandLogo: "/images/logolattafa.png", tagline: "A essência da sensualidade", fullDescription: "Lattafa Qimmah.", fragranceType: "Oriental Gourmand", bestFor: "Ocasiões especiais", launchYear: "2024", inspiration: "Fragrância original Lattafa", notes: { topo: "Amêndoas, Café", coracao: "Jasmim, Tuberosa, Fava Tonka", base: "Cacau, Baunilha, Sândalo" }, sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 39.99 }], sku: "6291108735463", ean: "6291108735463", rating: 5, reviews: 1 },
-    // ============ REMOVIDO: Lattafa Yara Elixir 100ml ============
     { id: 7, name: "Lattafa Bayaan 100ml", price: "42,99 €", oldPrice: "47,99 €", discount: "10%", image: "/images/Bayaan_1.png", hoverImage: "/images/Bayaan_2.png", brandLogo: "/images/logolattafa.png", tagline: "Frescura frutada com toque oriental", fullDescription: "BAYAAN de LATTAFA.", fragranceType: "Frutal Oriental", bestFor: "Qualquer ocasião", launchYear: "2024", inspiration: "Fragrância original Lattafa", notes: { topo: "Cassis, Lichia, Canela, Pimenta Rosa", coracao: "Praliné, Rosa, Cardamomo", base: "Musgo, Baunilha, Oud" }, sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 42.99 }], sku: "6291108735465", ean: "6291108735465", rating: 0, reviews: 0 },
     { id: 8, name: "Lattafa Pride Tharwah Gold 100ml", price: "49,99 €", image: "/images/Tharwah_Gold_1.png", hoverImage: "/images/Tharwah_Gold_2.png", brandLogo: "/images/logolattafa.png", tagline: "Floral oriental feminino", fullDescription: "Tharwah Gold Lattafa - fragrância floral oriental.", fragranceType: "Floral Oriental", bestFor: "Ocasiões especiais", launchYear: "2022", inspiration: "Fragrância original Lattafa", notes: { topo: "Lavanda, Bergamota", coracao: "Flor de Laranjeira, Jasmim Egípcio", base: "Baunilha, Âmbar, Vetiver" }, sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 49.99 }], sku: "6291108735454", ean: "6291108735454", rating: 5, reviews: 2 },
     { id: 9, name: "Lattafa Yara Candy 100ml", price: "39,99 €", oldPrice: "44,99 €", discount: "11%", image: "/images/Yara_Candy_1.png", hoverImage: "/images/Yara_Candy_2.png", brandLogo: "/images/logolattafa.png", tagline: "Doçura e frescor", fullDescription: "Yara Candy Lattafa.", fragranceType: "Floral Frutal Gourmand", bestFor: "Uso diário", launchYear: "2024", inspiration: "Fragrância original Lattafa", notes: { topo: "Frutas vermelhas, Bergamota", coracao: "Flor de Laranjeira, Jasmim", base: "Baunilha, Almíscar, Caramelo" }, sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 39.99 }], sku: "6291108735455", ean: "6291108735455", rating: 5, reviews: 3 },
@@ -89,11 +88,9 @@ export const feminine = {
     { id: 26, name: "Angham 100ml", price: "39,90 €", image: "/images/Angham_1.png", hoverImage: "/images/Angham_2.png", brandLogo: "/images/logolattafa.png", tagline: "A melodia dos sentidos", fullDescription: "Angham.", fragranceType: "Floral Amadeirado", bestFor: "Uso diário", launchYear: "2024", inspiration: "Fragrância original Lattafa", notes: { topo: "Bergamota, Laranja, Pêssego", coracao: "Rosa, Jasmim, Gardênia", base: "Almíscar, Âmbar, Baunilha" }, sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 39.90 }], sku: "6291108735476", ean: "6291108735476", rating: 0, reviews: 0 },
     { id: 27, name: "Afeef 100ml", price: "59,99 €", image: "/images/Afeef_1.png", hoverImage: "/images/Afeef_2.png", brandLogo: "/images/logolattafa.png", tagline: "Pureza e sofisticação", fullDescription: "Afeef.", fragranceType: "Cítrico Amadeirado", bestFor: "Uso diário", launchYear: "2024", inspiration: "Fragrância original Lattafa", notes: { topo: "Bergamota, Limão, Maçã Verde", coracao: "Lavanda, Gerânio, Jasmim", base: "Almíscar, Âmbar, Cedro" }, sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 59.99 }], sku: "6291108735477", ean: "6291108735477", rating: 0, reviews: 0 },
     { id: 28, name: "Sakura Lattafa 100ml", price: "44,99 €", image: "/images/Sakura_Lattafa_1.png", hoverImage: "/images/Sakura_Lattafa_2.png", brandLogo: "/images/logolattafa.png", tagline: "Fragrância floral delicada", fullDescription: "Sakura Lattafa - Uma fragrância floral inspirada nas cerejeiras em flor.", fragranceType: "Floral Fresco", bestFor: "Primavera e verão", launchYear: "2025", inspiration: "Fragrância original Lattafa", notes: { topo: "Cereja, Bergamota, Pêra", coracao: "Rosa, Jasmim, Sakura", base: "Almíscar, Baunilha, Sândalo" }, sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 44.99 }], sku: "6291108735478", ean: "6291108735478", rating: 0, reviews: 0 },
-    // ============ NOVOS PERFUMES ============
     { id: 29, name: "Theo Kingdom Woman 100ml", price: "44,90 €", image: "/images/The_Kingdom_Woman_1.png", hoverImage: "/images/The_Kingdom_Woman_2.png", brandLogo: "/images/logolattafa.png", tagline: "Realeza feminina", fullDescription: "Theo Kingdom Woman - Fragrância real e marcante para a mulher moderna.", fragranceType: "Floral Oriental", bestFor: "Ocasiões especiais", launchYear: "2025", inspiration: "Fragrância original Lattafa", notes: { topo: "Bergamota, Pêra", coracao: "Rosa, Jasmim", base: "Baunilha, Âmbar" }, sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 44.90 }], sku: "6291108735489", ean: "6291108735489", rating: 0, reviews: 0 },
     { id: 30, name: "Al Wataniah Sofia 100ml", price: "34,99 €", image: "/images/Al_Wataniah_Sofia_1.png", hoverImage: "/images/Al_Wataniah_Sofia_2.png", brandLogo: null, tagline: "Elegância e sofisticação", fullDescription: "Al Wataniah Sofia - Fragrância floral sofisticada.", fragranceType: "Floral", bestFor: "Uso diário", launchYear: "2025", inspiration: "Fragrância original", notes: { topo: "Bergamota, Rosa", coracao: "Jasmim, Lírio", base: "Almíscar, Baunilha" }, sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 34.99 }], sku: "6291108735490", ean: "6291108735490", rating: 0, reviews: 0 },
     { id: 31, name: "Nudo Sweet Berries 100ml", price: "44,99 €", image: "/images/Nudo_Sweet_Berries_1.png", hoverImage: "/images/Nudo_Sweet_Berries_2.png", brandLogo: null, tagline: "Frutas vermelhas", fullDescription: "Nudo Sweet Berries - Fragrância frutada e doce.", fragranceType: "Frutal", bestFor: "Uso diário", launchYear: "2025", inspiration: "Fragrância original", notes: { topo: "Frutas vermelhas", coracao: "Rosa, Jasmim", base: "Baunilha, Almíscar" }, sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 44.99 }], sku: "6291108735491", ean: "6291108735491", rating: 0, reviews: 0 },
-    // ============ ASDAAF REEM EDP - ADICIONADO ============
     { id: 32, name: "Asdaaf Reem EDP 100ml", price: "44,99 €", image: "/images/asdaaremm.png", hoverImage: "/images/asdaaremm.png", brandLogo: "/images/logolattafa.png", tagline: "Feminilidade árabe", fullDescription: "Asdaaf Reem EDP - Fragrância feminina marcante.", fragranceType: "Oriental Floral", bestFor: "Uso diário", launchYear: "2025", inspiration: "Fragrância original", notes: { topo: "Bergamota, Pêssego", coracao: "Rosa, Jasmim", base: "Âmbar, Almíscar" }, sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 44.99 }], sku: "6291108735492", ean: "6291108735492", rating: 0, reviews: 0 },
     { id: 33, name: "Maya Cherry Intense 100ml", price: "39,99 €", oldPrice: "44,99 €", discount: "11%", image: "/images/Maya_Cherry_Intense_1.png", hoverImage: "/images/Maya_Cherry_Intense_2.png", brandLogo: "/images/logolattafa.png", tagline: "A cereja intensa", fullDescription: "Maya Cherry Intense - Fragrância intensa de cereja vermelha.", fragranceType: "Oriental Frutal", bestFor: "Noites especiais", launchYear: "2025", inspiration: "Fragrância original", notes: { topo: "Cereja Vermelha, Framboesa", coracao: "Rosa, Jasmim", base: "Baunilha, Almíscar, Âmbar" }, sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 39.99 }], sku: "6291108735493", ean: "6291108735493", rating: 0, reviews: 0 }
   ]
@@ -145,7 +142,292 @@ export const unissex = {
   titleLine1: "Para",
   titleItalic: "todos",
   description: "Fragrâncias que transcendem gêneros. Perfeitas para qualquer ocasião.",
-  products: []
+  products: [
+    {
+      id: 0,
+      name: "Lattafa Nebras Unissex 100ml",
+      price: "44,99 €",
+      oldPrice: "49,99 €",
+      discount: "10%",
+      image: "/images/Lattafa_Nebras_1.png",
+      hoverImage: "/images/Lattafa_Nebras_2.png",
+      brandLogo: "/images/logolattafa.png",
+      tagline: "Obra-prima olfativa",
+      fullDescription: "Lattafa Pride Nebras Eau de Parfum - Uma fragrância oriental gourmand que combina bagas vermelhas, tangerina, baunilha e cacau.",
+      fragranceType: "Oriental Gourmand",
+      bestFor: "Homens e mulheres",
+      launchYear: "2022",
+      inspiration: "Fragrância original Lattafa",
+      notes: {
+        topo: "Bagas vermelhas, Tangerina",
+        coracao: "Baunilha, Raiz do cacau, Rosa",
+        base: "Cumaru, Âmbar, Almíscar, Açúcar"
+      },
+      sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 44.99 }],
+      sku: "6291108735435",
+      ean: "6291108735435",
+      rating: 0,
+      reviews: 0
+    },
+    {
+      id: 1,
+      name: "Lattafa Khamrah 100ml",
+      price: "49,99 €",
+      image: "/images/Lattafa - Khamrah.png",
+      hoverImage: "/images/Lattafa - Khamrah.png",
+      brandLogo: "/images/logolattafa.png",
+      tagline: "O fascínio oriental",
+      fullDescription: "Desvende a essência do fascínio oriental com LATTAFA Khamrah EDP. Uma fragrância que combina canela, noz-moscada e tâmaras.",
+      fragranceType: "Aromática Picante",
+      bestFor: "Uso diurno",
+      launchYear: "2022",
+      inspiration: "Fragrância original",
+      notes: {
+        topo: "Canela, Noz-moscada, Bergamota",
+        coracao: "Tâmaras, Praliné, Tuberosa, Mahonial",
+        base: "Baunilha, Fava Tonka, Benjoim, Mirra, Âmbar, Akigalawood"
+      },
+      sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 49.99 }],
+      sku: "6291108735430",
+      ean: "6291108735430",
+      rating: 0,
+      reviews: 0
+    },
+    {
+      id: 2,
+      name: "Lattafa Eclaire 100ml",
+      price: "54,90 €",
+      oldPrice: "59,90 €",
+      discount: "8%",
+      image: "/images/Lattafa_Eclaire_1.png",
+      hoverImage: "/images/Lattafa_Eclaire_2.png",
+      brandLogo: "/images/logolattafa.png",
+      tagline: "Doçura envolvente",
+      fullDescription: "Eclaire Lattafa - Uma fragrância gourmand com caramelo, açúcar, leite e baunilha.",
+      fragranceType: "Gourmand",
+      bestFor: "Uso diário",
+      launchYear: "2024",
+      inspiration: "Dupe de Bianco Latte",
+      notes: {
+        topo: "Caramelo, Açúcar, Leite",
+        coracao: "Mel, Flores brancas",
+        base: "Baunilha, Praliné, Almíscar"
+      },
+      sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 54.90 }],
+      sku: "6291108735453",
+      ean: "6291108735453",
+      rating: 5,
+      reviews: 1
+    },
+    {
+      id: 3,
+      name: "Lattafa Teriaq Intense 100ml",
+      price: "44,90 €",
+      oldPrice: "49,90 €",
+      image: "/images/Teriaq_Intense_1.png",
+      hoverImage: "/images/Teriaq_Intense_2.png",
+      brandLogo: "/images/logolattafa.png",
+      tagline: "Ode à intensidade",
+      fullDescription: "Lattafa Teriaq Intense - Uma fragrância oriental especiada gourmand com bergamota, açafrão, licor de ameixa e canela.",
+      fragranceType: "Oriental Especiado Gourmand",
+      bestFor: "Noites especiais",
+      launchYear: "2024",
+      inspiration: "Fragrância original Lattafa",
+      notes: {
+        topo: "Bergamota, Açafrão",
+        coracao: "Licor de Ameixa, Canela",
+        base: "Fava Tonka, Âmbar, Benjoim"
+      },
+      sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 44.90 }],
+      sku: "6291108735466",
+      ean: "6291108735466",
+      rating: 5,
+      reviews: 1
+    },
+    {
+      id: 4,
+      name: "Lattafa Khamrah Dukhan Unissex 100ml",
+      price: "49,99 €",
+      image: "/images/Lattafa_Khamrah_Dukhan_1.png",
+      hoverImage: "/images/Lattafa_Khamrah_Dukhan_2.png",
+      brandLogo: "/images/logolattafa.png",
+      tagline: "Perfume oriental unissex intenso",
+      fullDescription: "Lattafa Khamrah Dukhan - Uma fragrância oriental amadeirada especiada com pimenta, tangerina, incenso e patchouli.",
+      fragranceType: "Oriental Amadeirado Especiado",
+      bestFor: "Noites especiais",
+      launchYear: "2025",
+      inspiration: "Fragrância original Lattafa",
+      notes: {
+        topo: "Pimenta, Tangerina, Especiarias",
+        coracao: "Incenso, Patchouli, Ladano, Flor de Laranjeira",
+        base: "Praliné, Âmbar, Fava Tonka, Tabaco, Benjoim"
+      },
+      sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 49.99 }],
+      sku: "6291108735442",
+      ean: "6291108735442",
+      rating: 0,
+      reviews: 0
+    },
+    {
+      id: 5,
+      name: "Afnan 9 PM Eau de Parfum 100ml",
+      price: "54,90 €",
+      image: "/images/Afnan_9PM_1.png",
+      hoverImage: "/images/Afnan_9PM_2.png",
+      brandLogo: null,
+      tagline: "Âmbar e baunilha",
+      fullDescription: "Afnan 9PM - Uma fragrância âmbar baunilha com maçã, canela, lavanda e bergamota.",
+      fragranceType: "Âmbar Baunilha",
+      bestFor: "Uso diário",
+      launchYear: "2020",
+      inspiration: "Fragrância original Afnan",
+      notes: {
+        topo: "Maçã, Canela, Lavanda, Bergamota",
+        coracao: "Flor de Laranjeira, Lírio",
+        base: "Baunilha, Fava Tonka, Âmbar, Patchouli"
+      },
+      sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 54.90 }],
+      sku: "6290171002338",
+      ean: "6290171002338",
+      rating: 5,
+      reviews: 1
+    }
+  ]
+};
+
+// ============ SEÇÃO: DESODORIZANTES ============
+export const desodorizantes = {
+  kicker: "FRESCURA E ELEGÂNCIA",
+  titleLine1: "Desodorizantes",
+  titleItalic: "Spray",
+  description: "Leve a sofisticação da perfumaria árabe para a sua rotina diária. Desodorizantes em spray com as fragrâncias mais icónicas.",
+  products: [
+    {
+      id: 0,
+      name: "Asad Bourbon Desodorizante Spray",
+      price: "9,99 €",
+      image: "/images/Asad_Bourbon_Desodorizante.png",
+      hoverImage: "/images/Asad_Bourbon_Desodorizante.png",
+      images: ["/images/Asad_Bourbon_Desodorizante.png"],
+      brandLogo: "/images/logolattafa.png",
+      tagline: "Sofisticação masculina",
+      fullDescription: "Eleve a sofisticação da sua rotina diária com o Desodorizante Lattafa Asad Bourbon, a aguardada versão que redefine o conceito de frescura masculina.",
+      fragranceType: "Amadeirado Gourmand",
+      bestFor: "Uso diário",
+      launchYear: "2024",
+      inspiration: "Fragrância original Lattafa",
+      notes: {
+        topo: "Canela, Pimenta Preta, Tabaco",
+        coracao: "Baunilha, Oud, Âmbar",
+        base: "Fava Tonka, Couro, Patchouli"
+      },
+      sizes: [{ size: "200ml", price: 9.99 }],
+      sku: "6291108735500",
+      ean: "6291108735500",
+      rating: 0,
+      reviews: 0
+    },
+    {
+      id: 1,
+      name: "Lattafa Asad Desodorizante Spray",
+      price: "9,99 €",
+      image: "/images/Lattafa_Asad_Desodorizante.png",
+      hoverImage: "/images/Lattafa_Asad_Desodorizante.png",
+      images: ["/images/Lattafa_Asad_Desodorizante.png"],
+      brandLogo: "/images/logolattafa.png",
+      tagline: "Intensidade e carisma",
+      fullDescription: "Leve a intensidade e o carisma de um dos perfumes mais desejados do mundo para a sua rotina de higiene diária. O Desodorizante em Spray Lattafa Asad foi concebido para o homem moderno que valoriza uma fragrância duradoura.",
+      fragranceType: "Gourmet Picante",
+      bestFor: "Uso diário",
+      launchYear: "2024",
+      inspiration: "Fragrância original Lattafa",
+      notes: {
+        topo: "Pimenta Negra, Tabaco, Abacaxi",
+        coracao: "Patchouli, Café, Íris",
+        base: "Baunilha, Âmbar, Madeira seca, Benjoim, Ládano"
+      },
+      sizes: [{ size: "200ml", price: 9.99 }],
+      sku: "6291108735501",
+      ean: "6291108735501",
+      rating: 0,
+      reviews: 0
+    },
+    {
+      id: 2,
+      name: "Yara Candy Desodorizante Spray",
+      price: "9,99 €",
+      image: "/images/Yara_Candy_Desodorizante.png",
+      hoverImage: "/images/Yara_Candy_Desodorizante.png",
+      images: ["/images/Yara_Candy_Desodorizante.png"],
+      brandLogo: "/images/logolattafa.png",
+      tagline: "Doçura e frescor floral",
+      fullDescription: "Desodorizante em Spray Lattafa Yara Candy, uma fragrância floral doce e frutada que combina a delicadeza das flores com a doçura das frutas.",
+      fragranceType: "Floral Frutal Gourmand",
+      bestFor: "Uso diário",
+      launchYear: "2024",
+      inspiration: "Fragrância original Lattafa",
+      notes: {
+        topo: "Groselha preta, Tangerina",
+        coracao: "Gardénia, Morango",
+        base: "Almíscar, Baunilha, Santalum, Âmbar cinza"
+      },
+      sizes: [{ size: "200ml", price: 9.99 }],
+      sku: "6291108735502",
+      ean: "6291108735502",
+      rating: 0,
+      reviews: 0
+    },
+    {
+      id: 3,
+      name: "Khamrah Desodorizante Spray",
+      price: "9,99 €",
+      image: "/images/Khamrah_Desodorizante.png",
+      hoverImage: "/images/Khamrah_Desodorizante.png",
+      images: ["/images/Khamrah_Desodorizante.png"],
+      brandLogo: "/images/logolattafa.png",
+      tagline: "Opulência árabe",
+      fullDescription: "Experimente a opulência da perfumaria árabe com o Desodorizante em Spray Lattafa Khamrah. Inspirado numa das fragrâncias mais icónicas e premiadas da casa Lattafa.",
+      fragranceType: "Âmbar Oriental",
+      bestFor: "Uso diário",
+      launchYear: "2022",
+      inspiration: "Fragrância original Lattafa",
+      notes: {
+        topo: "Jasmim, Pêssego",
+        coracao: "Caramelo, Âmbar cinza",
+        base: "Patchouli, Santalum"
+      },
+      sizes: [{ size: "200ml", price: 9.99 }],
+      sku: "6291108735503",
+      ean: "6291108735503",
+      rating: 0,
+      reviews: 0
+    },
+    {
+      id: 4,
+      name: "Yara Moi Desodorizante Spray",
+      price: "9,99 €",
+      image: "/images/Yara_Moi_Desodorizante.png",
+      hoverImage: "/images/Yara_Moi_Desodorizante.png",
+      images: ["/images/Yara_Moi_Desodorizante.png"],
+      brandLogo: "/images/logolattafa.png",
+      tagline: "Feminilidade e sofisticação",
+      fullDescription: "Desodorizante em Spray Lattafa Yara Moi, uma fragrância floral amadeirada que combina feminilidade e sofisticação.",
+      fragranceType: "Floral Amadeirado",
+      bestFor: "Uso diário",
+      launchYear: "2024",
+      inspiration: "Fragrância original Lattafa",
+      notes: {
+        topo: "Bergamota, Pêra",
+        coracao: "Rosa, Jasmim, Íris",
+        base: "Baunilha, Almíscar, Sândalo"
+      },
+      sizes: [{ size: "200ml", price: 9.99 }],
+      sku: "6291108735504",
+      ean: "6291108735504",
+      rating: 0,
+      reviews: 0
+    }
+  ]
 };
 
 export const trends = {
@@ -202,7 +484,7 @@ export const newsletter = {
 
 export const footer = {
   columns: [
-    { title: "LOJA", links: ["Ver tudo", "Novidades", "Mais vendidos", "Para Ela", "Para Ele", "Unissex"] },
+    { title: "LOJA", links: ["Ver tudo", "Novidades", "Mais vendidos", "Para Ela", "Para Ele", "Unissex", "Desodorizantes"] },
     { title: "AJUDA", links: ["Portes e entregas", "Trocas e devoluções", "FAQ", "Fale connosco"] },
     { title: "INSTITUCIONAL", links: ["Sobre a Noraya", "Política de privacidade", "Termos de uso"] }
   ],

@@ -191,6 +191,18 @@ const PRODUCT_PRICES = {
   'Teriaq Intense': 44.90,
   'Lattafa Khamrah Dukhan Unissex 100ml': 49.99,
   'Khamrah Dukhan': 49.99,
+
+  // ============ DESODORIZANTES ============
+  'Asad Bourbon Desodorizante Spray': 9.99,
+  'Asad Bourbon Desodorizante': 9.99,
+  'Lattafa Asad Desodorizante Spray': 9.99,
+  'Lattafa Asad Desodorizante': 9.99,
+  'Yara Candy Desodorizante Spray': 9.99,
+  'Yara Candy Desodorizante': 9.99,
+  'Khamrah Desodorizante Spray': 9.99,
+  'Khamrah Desodorizante': 9.99,
+  'Yara Moi Desodorizante Spray': 9.99,
+  'Yara Moi Desodorizante': 9.99,
 };
 
 // Função para obter preço do produto
@@ -568,6 +580,11 @@ const FavoritesPage = () => {
         if (normalizeName(content.unissex.products[i].name) === searchName) return { category: 'unissex', index: i };
       }
     }
+    if (content.desodorizantes?.products) {
+      for (let i = 0; i < content.desodorizantes.products.length; i++) {
+        if (normalizeName(content.desodorizantes.products[i].name) === searchName) return { category: 'desodorizantes', index: i };
+      }
+    }
     return null;
   };
   
@@ -657,6 +674,11 @@ const MyReviewsPage = () => {
     if (content.unissex?.products) {
       for (let i = 0; i < content.unissex.products.length; i++) {
         if (normalizeName(content.unissex.products[i].name) === searchName) return { category: 'unissex', index: i };
+      }
+    }
+    if (content.desodorizantes?.products) {
+      for (let i = 0; i < content.desodorizantes.products.length; i++) {
+        if (normalizeName(content.desodorizantes.products[i].name) === searchName) return { category: 'desodorizantes', index: i };
       }
     }
     return null;
@@ -789,6 +811,10 @@ const ProductDetail = () => {
           productsList = content.unissex?.products || [];
           categoryName = 'unissex';
           foundProduct = productsList[productIndex];
+        } else if (category === 'desodorizantes') {
+          productsList = content.desodorizantes?.products || [];
+          categoryName = 'desodorizantes';
+          foundProduct = productsList[productIndex];
         }
         
         if (foundProduct) {
@@ -915,7 +941,7 @@ const ProductDetail = () => {
   };
 
   const handleWhatsAppEncomenda = () => {
-    const message = `*ENCOMENDA - NORAYA PERFUMES*\n\n*Produto:* ${product?.name}\n*Tamanho:* Perfume Original\n*Preço:* Sob consulta\n\n*Cliente:* ${user?.displayName || user?.email || 'Cliente'}\n\nGostaria de saber o valor e disponibilidade deste perfume.`;
+    const message = `*ENCOMENDA - NORAYA PERFUMES*\n\n*Produto:* ${product?.name}\n*Tamanho:* ${product?.sizes?.[0]?.size || 'Perfume Original'}\n*Preço:* ${product?.price || 'Sob consulta'}\n\n*Cliente:* ${user?.displayName || user?.email || 'Cliente'}\n\nGostaria de saber o valor e disponibilidade deste produto.`;
     window.open("https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(message), '_blank');
     toast.success('Redirecionando para o WhatsApp...');
   };
@@ -970,7 +996,12 @@ const ProductDetail = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm text-[#1a1410]/60">
               <Link to="/" className="hover:text-[#c9a96a]">Home</Link><span>/</span>
-              <Link to={`/#${product.category}`} className="hover:text-[#c9a96a]">{product.category === 'femininos' ? 'Para Ela' : product.category === 'masculinos' ? 'Para Ele' : 'Unissex'}</Link><span>/</span>
+              <Link to={`/#${product.category}`} className="hover:text-[#c9a96a]">
+                {product.category === 'femininos' ? 'Para Ela' : 
+                 product.category === 'masculinos' ? 'Para Ele' : 
+                 product.category === 'desodorizantes' ? 'Desodorizantes' : 'Unissex'}
+              </Link>
+              <span>/</span>
               <span className="text-[#c9a96a] truncate">{product.name}</span>
             </div>
             <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-[#1a1410]/60 hover:text-[#c9a96a] transition-colors">
@@ -993,57 +1024,65 @@ const ProductDetail = () => {
                     <img src={img} className="w-full h-full object-cover" />
                   </button>
                 ))}
-                <button onClick={() => setMainImage('/images/decant.png')} className="w-20 h-20 rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#c9a96a] relative">
-                  <img src="/images/decant.png" className="w-full h-full object-cover" />
-                  <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-[9px] text-center py-0.5">Decant 2/3ml</span>
-                </button>
-                <button onClick={() => setMainImage('/images/decant1.png')} className="w-20 h-20 rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#c9a96a] relative">
-                  <img src="/images/decant1.png" className="w-full h-full object-cover" />
-                  <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-[9px] text-center py-0.5">Decant 5/10ml</span>
-                </button>
+                {product.category !== 'desodorizantes' && (
+                  <>
+                    <button onClick={() => setMainImage('/images/decant.png')} className="w-20 h-20 rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#c9a96a] relative">
+                      <img src="/images/decant.png" className="w-full h-full object-cover" />
+                      <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-[9px] text-center py-0.5">Decant 2/3ml</span>
+                    </button>
+                    <button onClick={() => setMainImage('/images/decant1.png')} className="w-20 h-20 rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#c9a96a] relative">
+                      <img src="/images/decant1.png" className="w-full h-full object-cover" />
+                      <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-[9px] text-center py-0.5">Decant 5/10ml</span>
+                    </button>
+                  </>
+                )}
               </div>
             </div>
             <div className="space-y-6">
               <div><p className="text-sm text-[#c9a96a] font-semibold tracking-wide">{product.brand || 'LATTAFA'}</p><h1 className="text-2xl lg:text-3xl font-display font-bold text-[#1a1410] mt-1">{product.name}</h1></div>
               <div className="flex items-center gap-3"><div className="flex gap-1">{[...Array(5)].map((_, i) => (<Star key={i} size={18} className={i < Math.floor(averageRating) ? 'fill-[#c9a96a] text-[#c9a96a]' : 'text-gray-300'} />))}</div><span className="text-sm text-[#1a1410]/60">({totalReviews} avaliações)</span></div>
               
-              <div><label className="block text-sm font-medium mb-3 text-[#1a1410]">TAMANHO</label>
-                <div className="flex gap-3 flex-wrap">
-                  <button 
-                    onClick={() => setSelectedSize('2ml')} 
-                    className={`px-5 py-2.5 rounded-lg border-2 transition-all ${selectedSize === '2ml' ? 'border-[#c9a96a] bg-[#f7f3ec] text-[#c9a96a] font-semibold shadow-md' : 'border-gray-300 hover:border-[#c9a96a]/50'}`}
-                  >
-                    2ml - Decant (Kit 10un)
-                  </button>
-                  <button 
-                    onClick={() => setSelectedSize('3ml')} 
-                    className={`px-5 py-2.5 rounded-lg border-2 transition-all ${selectedSize === '3ml' ? 'border-[#c9a96a] bg-[#f7f3ec] text-[#c9a96a] font-semibold shadow-md' : 'border-gray-300 hover:border-[#c9a96a]/50'}`}
-                  >
-                    3ml - Decant (Kit 10un)
-                  </button>
-                  <button 
-                    onClick={() => setSelectedSize('5ml')} 
-                    className={`px-5 py-2.5 rounded-lg border-2 transition-all ${selectedSize === '5ml' ? 'border-[#c9a96a] bg-[#f7f3ec] text-[#c9a96a] font-semibold shadow-md' : 'border-gray-300 hover:border-[#c9a96a]/50'}`}
-                  >
-                    5ml - Decant (Kit 10un)
-                  </button>
-                  <button 
-                    onClick={() => setSelectedSize('10ml')} 
-                    className={`px-5 py-2.5 rounded-lg border-2 transition-all ${selectedSize === '10ml' ? 'border-[#c9a96a] bg-[#f7f3ec] text-[#c9a96a] font-semibold shadow-md' : 'border-gray-300 hover:border-[#c9a96a]/50'}`}
-                  >
-                    10ml - Decant (Kit 10un)
-                  </button>
+              {product.category !== 'desodorizantes' && (
+                <div><label className="block text-sm font-medium mb-3 text-[#1a1410]">TAMANHO</label>
+                  <div className="flex gap-3 flex-wrap">
+                    <button 
+                      onClick={() => setSelectedSize('2ml')} 
+                      className={`px-5 py-2.5 rounded-lg border-2 transition-all ${selectedSize === '2ml' ? 'border-[#c9a96a] bg-[#f7f3ec] text-[#c9a96a] font-semibold shadow-md' : 'border-gray-300 hover:border-[#c9a96a]/50'}`}
+                    >
+                      2ml - Decant (Kit 10un)
+                    </button>
+                    <button 
+                      onClick={() => setSelectedSize('3ml')} 
+                      className={`px-5 py-2.5 rounded-lg border-2 transition-all ${selectedSize === '3ml' ? 'border-[#c9a96a] bg-[#f7f3ec] text-[#c9a96a] font-semibold shadow-md' : 'border-gray-300 hover:border-[#c9a96a]/50'}`}
+                    >
+                      3ml - Decant (Kit 10un)
+                    </button>
+                    <button 
+                      onClick={() => setSelectedSize('5ml')} 
+                      className={`px-5 py-2.5 rounded-lg border-2 transition-all ${selectedSize === '5ml' ? 'border-[#c9a96a] bg-[#f7f3ec] text-[#c9a96a] font-semibold shadow-md' : 'border-gray-300 hover:border-[#c9a96a]/50'}`}
+                    >
+                      5ml - Decant (Kit 10un)
+                    </button>
+                    <button 
+                      onClick={() => setSelectedSize('10ml')} 
+                      className={`px-5 py-2.5 rounded-lg border-2 transition-all ${selectedSize === '10ml' ? 'border-[#c9a96a] bg-[#f7f3ec] text-[#c9a96a] font-semibold shadow-md' : 'border-gray-300 hover:border-[#c9a96a]/50'}`}
+                    >
+                      10ml - Decant (Kit 10un)
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
               
               {productPrice && (
                 <div className="border-t border-gray-100 pt-4">
                   <span className="text-3xl font-bold text-[#1a1410]">{productPrice.toFixed(2)} €</span>
-                  <p className="text-sm text-[#1a1410]/50 mt-1">Preço sugerido - Frasco 100ml</p>
+                  <p className="text-sm text-[#1a1410]/50 mt-1">
+                    {product.category === 'desodorizantes' ? 'Preço sugerido - 200ml' : 'Preço sugerido - Frasco 100ml'}
+                  </p>
                 </div>
               )}
               
-              {isDecant && (
+              {isDecant && product.category !== 'desodorizantes' && (
                 <div className="bg-gradient-to-r from-[#1a1410] to-[#0a0807] p-4 rounded-xl border border-[#c9a96a]/20">
                   <img src={getDecantImage(selectedSize)} alt={`Decant ${selectedSize}`} className="w-16 h-16 object-contain mx-auto mb-2" />
                   <p className="text-[#e8c98a] font-semibold text-lg text-center">🎁 Kit de Decants {selectedSize}</p>
@@ -1054,26 +1093,38 @@ const ProductDetail = () => {
                 </div>
               )}
               
-              {/* Botão principal - MONTE SEU KIT */}
-              <button 
-                onClick={handleAddToKit}
-                className="w-full py-4 bg-gradient-to-r from-[#c9a96a] to-[#e8c98a] text-black rounded-xl font-bold text-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
-              >
-                <ShoppingCart size={20} />
-                MONTE SEU KIT
-              </button>
-              
-              {/* Seção do Perfume Original */}
-              <div className="bg-gradient-to-r from-[#1a1410] to-[#0a0807] p-4 rounded-xl border border-[#c9a96a]/20">
-                <p className="text-[#e8c98a] font-semibold text-lg text-center">📦 Perfume Original</p>
-                <p className="text-[#c9a96a]/80 text-sm text-center mt-1">
-                  Produto disponível sob encomenda.
-                </p>
-                <p className="text-[#c9a96a]/60 text-xs text-center mt-2">*Consulte preço e disponibilidade via WhatsApp.</p>
-                <button onClick={handleWhatsAppEncomenda} className="mt-4 w-full py-3 bg-gradient-to-r from-[#c9a96a] to-[#e8c98a] text-black rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2">
-                  ENCOMENDAR PELO WHATSAPP
+              {/* Botão principal */}
+              {product.category !== 'desodorizantes' ? (
+                <button 
+                  onClick={handleAddToKit}
+                  className="w-full py-4 bg-gradient-to-r from-[#c9a96a] to-[#e8c98a] text-black rounded-xl font-bold text-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                >
+                  <ShoppingCart size={20} />
+                  MONTE SEU KIT
                 </button>
-              </div>
+              ) : (
+                <button 
+                  onClick={handleWhatsAppEncomenda}
+                  className="w-full py-4 bg-gradient-to-r from-[#c9a96a] to-[#e8c98a] text-black rounded-xl font-bold text-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                >
+                  <ShoppingCart size={20} />
+                  COMPRAR AGORA
+                </button>
+              )}
+              
+              {/* Seção do Produto Original - apenas para perfumes */}
+              {product.category !== 'desodorizantes' && (
+                <div className="bg-gradient-to-r from-[#1a1410] to-[#0a0807] p-4 rounded-xl border border-[#c9a96a]/20">
+                  <p className="text-[#e8c98a] font-semibold text-lg text-center">📦 Perfume Original</p>
+                  <p className="text-[#c9a96a]/80 text-sm text-center mt-1">
+                    Produto disponível sob encomenda.
+                  </p>
+                  <p className="text-[#c9a96a]/60 text-xs text-center mt-2">*Consulte preço e disponibilidade via WhatsApp.</p>
+                  <button onClick={handleWhatsAppEncomenda} className="mt-4 w-full py-3 bg-gradient-to-r from-[#c9a96a] to-[#e8c98a] text-black rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                    ENCOMENDAR PELO WHATSAPP
+                  </button>
+                </div>
+              )}
               
               <div className="flex gap-3"><button onClick={handleToggleFavorite} className={`flex-1 py-3 rounded-lg border-2 flex items-center justify-center gap-2 transition-all ${isFavorite ? 'border-red-400 bg-red-50 text-red-500' : 'border-gray-300 hover:border-red-300'}`}><Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500' : ''}`} />{isFavorite ? 'Favoritado' : 'Favoritar'}</button></div>
               
@@ -1144,26 +1195,27 @@ const ProductCard = ({ p, dark = false, index, category }) => {
     const normalizeName = (name) => name.toLowerCase().replace(/\s*\d+ml\s*/gi, '').replace(/\s+/g, ' ').trim();
     const searchName = normalizeName(productName);
     
-    if (content.feminine?.products) {
-      for (let i = 0; i < content.feminine.products.length; i++) {
-        if (normalizeName(content.feminine.products[i].name) === searchName) return { category: 'femininos', index: i };
-      }
-    }
-    if (content.masculine?.products) {
-      for (let i = 0; i < content.masculine.products.length; i++) {
-        if (normalizeName(content.masculine.products[i].name) === searchName) return { category: 'masculinos', index: i };
-      }
-    }
-    if (content.unissex?.products) {
-      for (let i = 0; i < content.unissex.products.length; i++) {
-        if (normalizeName(content.unissex.products[i].name) === searchName) return { category: 'unissex', index: i };
+    const categories = [
+      { name: 'feminine', label: 'femininos' },
+      { name: 'masculine', label: 'masculinos' },
+      { name: 'unissex', label: 'unissex' },
+      { name: 'desodorizantes', label: 'desodorizantes' }
+    ];
+    
+    for (const cat of categories) {
+      if (content[cat.name]?.products) {
+        for (let i = 0; i < content[cat.name].products.length; i++) {
+          if (normalizeName(content[cat.name].products[i].name) === searchName) {
+            return { category: cat.label, index: i };
+          }
+        }
       }
     }
     return null;
   };
   
   const handleClick = () => {
-    if (category && (category === 'femininos' || category === 'masculinos' || category === 'unissex')) {
+    if (category && (category === 'femininos' || category === 'masculinos' || category === 'unissex' || category === 'desodorizantes')) {
       navigate(`/produto/${category}/${index}`);
       return;
     }
@@ -1341,6 +1393,7 @@ const HomePage = () => {
       <CategorySection id="femininos" data={content.feminine} dark={false} />
       <CategorySection id="masculinos" data={content.masculine} dark={true} />
       <CategorySection id="unissex" data={content.unissex} dark={false} />
+      <CategorySection id="desodorizantes" data={content.desodorizantes} dark={true} />
       <Trends />
       <Follow />
       <Newsletter />
