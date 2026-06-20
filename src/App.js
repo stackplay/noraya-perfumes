@@ -31,6 +31,31 @@ const getDecantImage = (size) => {
   }
 };
 
+// ============ LISTA DE PRODUTOS EM REPOSIÇÃO ============
+const OUT_OF_STOCK = [
+  'Sakura Lattafa 100ml',
+  'Sakura',
+  'Lattafa HAYA 100ml',
+  'HAYA',
+  'Lattafa Opulent Dubai 100ml',
+  'Opulent Dubai',
+  'Afnan Supremacy Collector\'s Edition 100ml',
+  'Supremacy',
+  'Maison Alhambra Cassius 100ml',
+  'Cassius',
+];
+
+// Verifica se o produto está em reposição
+const isOutOfStock = (productName) => {
+  if (!productName) return false;
+  for (const name of OUT_OF_STOCK) {
+    if (productName.toLowerCase().includes(name.toLowerCase()) || name.toLowerCase().includes(productName.toLowerCase())) {
+      return true;
+    }
+  }
+  return false;
+};
+
 // Mapeamento de preços por nome de produto (ATUALIZADO)
 const PRODUCT_PRICES = {
   // ============ PARA ELA (Femininos) ============
@@ -124,10 +149,11 @@ const PRODUCT_PRICES = {
   'Armaf Club de Nuit Intense Man': 82.99,
   'Club de Nuit Intense Man': 82.99,
   'Club Intense': 82.99,
+  'Lattafa Fakhar Black 100ml': 42.99,
+  'Lattafa Fakhar Black': 42.99,
+  'Fakhar Black': 42.99,
   'Liquid Brun French Avenue 100ml': 42.99,
   'Liquid Brun French Avenue': 42.99,
-  'Fakhar Black': 42.99,
-  'Lattafa Fakhar Black 100ml': 42.99,
   'Fakhar': 42.99,
   'Afnan 9 PM Eau de Parfum 100ml': 54.90,
   '9 PM': 54.90,
@@ -223,6 +249,9 @@ const getProductPrice = (productName) => {
 const getProductPriceDisplay = (productName) => {
   const price = getProductPrice(productName);
   if (price) {
+    if (isOutOfStock(productName)) {
+      return `${price.toFixed(2)} € (AGUARDANDO REPOSIÇÃO)`;
+    }
     return `${price.toFixed(2)} €`;
   }
   return 'Aguardando reposição';
@@ -565,24 +594,20 @@ const FavoritesPage = () => {
     const normalizeName = (name) => name.toLowerCase().replace(/\s*\d+ml\s*/gi, '').replace(/\s+/g, ' ').trim();
     const searchName = normalizeName(productName);
     
-    if (content.feminine?.products) {
-      for (let i = 0; i < content.feminine.products.length; i++) {
-        if (normalizeName(content.feminine.products[i].name) === searchName) return { category: 'femininos', index: i };
-      }
-    }
-    if (content.masculine?.products) {
-      for (let i = 0; i < content.masculine.products.length; i++) {
-        if (normalizeName(content.masculine.products[i].name) === searchName) return { category: 'masculinos', index: i };
-      }
-    }
-    if (content.unissex?.products) {
-      for (let i = 0; i < content.unissex.products.length; i++) {
-        if (normalizeName(content.unissex.products[i].name) === searchName) return { category: 'unissex', index: i };
-      }
-    }
-    if (content.desodorizantes?.products) {
-      for (let i = 0; i < content.desodorizantes.products.length; i++) {
-        if (normalizeName(content.desodorizantes.products[i].name) === searchName) return { category: 'desodorizantes', index: i };
+    const categories = [
+      { name: 'feminine', label: 'femininos' },
+      { name: 'masculine', label: 'masculinos' },
+      { name: 'unissex', label: 'unissex' },
+      { name: 'desodorizantes', label: 'desodorizantes' }
+    ];
+    
+    for (const cat of categories) {
+      if (content[cat.name]?.products) {
+        for (let i = 0; i < content[cat.name].products.length; i++) {
+          if (normalizeName(content[cat.name].products[i].name) === searchName) {
+            return { category: cat.label, index: i };
+          }
+        }
       }
     }
     return null;
@@ -661,24 +686,20 @@ const MyReviewsPage = () => {
     const normalizeName = (name) => name.toLowerCase().replace(/\s*\d+ml\s*/gi, '').replace(/\s+/g, ' ').trim();
     const searchName = normalizeName(productName);
     
-    if (content.feminine?.products) {
-      for (let i = 0; i < content.feminine.products.length; i++) {
-        if (normalizeName(content.feminine.products[i].name) === searchName) return { category: 'femininos', index: i };
-      }
-    }
-    if (content.masculine?.products) {
-      for (let i = 0; i < content.masculine.products.length; i++) {
-        if (normalizeName(content.masculine.products[i].name) === searchName) return { category: 'masculinos', index: i };
-      }
-    }
-    if (content.unissex?.products) {
-      for (let i = 0; i < content.unissex.products.length; i++) {
-        if (normalizeName(content.unissex.products[i].name) === searchName) return { category: 'unissex', index: i };
-      }
-    }
-    if (content.desodorizantes?.products) {
-      for (let i = 0; i < content.desodorizantes.products.length; i++) {
-        if (normalizeName(content.desodorizantes.products[i].name) === searchName) return { category: 'desodorizantes', index: i };
+    const categories = [
+      { name: 'feminine', label: 'femininos' },
+      { name: 'masculine', label: 'masculinos' },
+      { name: 'unissex', label: 'unissex' },
+      { name: 'desodorizantes', label: 'desodorizantes' }
+    ];
+    
+    for (const cat of categories) {
+      if (content[cat.name]?.products) {
+        for (let i = 0; i < content[cat.name].products.length; i++) {
+          if (normalizeName(content[cat.name].products[i].name) === searchName) {
+            return { category: cat.label, index: i };
+          }
+        }
       }
     }
     return null;
@@ -867,6 +888,10 @@ const ProductDetail = () => {
   }, [user, product]);
 
   const handleAddToKit = () => {
+    if (product && isOutOfStock(product.name)) {
+      toast.error('Este produto está em reposição e não pode ser adicionado ao kit');
+      return;
+    }
     if (!user) { 
       toast.error('Faça login para adicionar ao kit');
       handleLogin();
@@ -941,6 +966,13 @@ const ProductDetail = () => {
   };
 
   const handleWhatsAppEncomenda = () => {
+    if (product && isOutOfStock(product.name)) {
+      const message = `*NORAYA PERFUMES*\n\n*${product.name}*\n\n⚠️ *PRODUTO EM REPOSIÇÃO*\n\nEste produto encontra-se temporariamente indisponível.\n\n*Preço:* ${getProductPriceDisplay(product.name)}\n\n*Previsão de reposição:* Em breve\n\nAgradecemos a compreensão.`;
+      window.open("https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(message), '_blank');
+      toast.info('Produto em reposição!');
+      return;
+    }
+    
     const message = `*ENCOMENDA - NORAYA PERFUMES*\n\n*Produto:* ${product?.name}\n*Tamanho:* ${product?.sizes?.[0]?.size || 'Perfume Original'}\n*Preço:* ${product?.price || 'Sob consulta'}\n\n*Cliente:* ${user?.displayName || user?.email || 'Cliente'}\n\nGostaria de saber o valor e disponibilidade deste produto.`;
     window.open("https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(message), '_blank');
     toast.success('Redirecionando para o WhatsApp...');
@@ -987,6 +1019,7 @@ const ProductDetail = () => {
   const isDecant = selectedSize && ['2ml', '3ml', '5ml', '10ml'].includes(selectedSize);
   const kitPrice = selectedSize ? KIT_PRICES[selectedSize] : 0;
   const productPrice = getProductPrice(product.name);
+  const outOfStock = isOutOfStock(product.name);
 
   return (
     <div className="bg-[#f7f3ec] min-h-screen pb-16 pt-24">
@@ -1076,13 +1109,16 @@ const ProductDetail = () => {
               {productPrice && (
                 <div className="border-t border-gray-100 pt-4">
                   <span className="text-3xl font-bold text-[#1a1410]">{productPrice.toFixed(2)} €</span>
+                  {outOfStock && (
+                    <p className="text-sm text-red-500 font-semibold mt-1">⚠️ AGUARDANDO REPOSIÇÃO</p>
+                  )}
                   <p className="text-sm text-[#1a1410]/50 mt-1">
                     {product.category === 'desodorizantes' ? 'Preço sugerido - 200ml' : 'Preço sugerido - Frasco 100ml'}
                   </p>
                 </div>
               )}
               
-              {isDecant && product.category !== 'desodorizantes' && (
+              {isDecant && product.category !== 'desodorizantes' && !outOfStock && (
                 <div className="bg-gradient-to-r from-[#1a1410] to-[#0a0807] p-4 rounded-xl border border-[#c9a96a]/20">
                   <img src={getDecantImage(selectedSize)} alt={`Decant ${selectedSize}`} className="w-16 h-16 object-contain mx-auto mb-2" />
                   <p className="text-[#e8c98a] font-semibold text-lg text-center">🎁 Kit de Decants {selectedSize}</p>
@@ -1097,10 +1133,15 @@ const ProductDetail = () => {
               {product.category !== 'desodorizantes' ? (
                 <button 
                   onClick={handleAddToKit}
-                  className="w-full py-4 bg-gradient-to-r from-[#c9a96a] to-[#e8c98a] text-black rounded-xl font-bold text-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                  className={`w-full py-4 rounded-xl font-bold text-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 ${
+                    outOfStock 
+                      ? 'bg-gray-400 text-gray-700 cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-[#c9a96a] to-[#e8c98a] text-black'
+                  }`}
+                  disabled={outOfStock}
                 >
                   <ShoppingCart size={20} />
-                  MONTE SEU KIT
+                  {outOfStock ? 'INDISPONÍVEL' : 'MONTE SEU KIT'}
                 </button>
               ) : (
                 <button 
@@ -1117,11 +1158,13 @@ const ProductDetail = () => {
                 <div className="bg-gradient-to-r from-[#1a1410] to-[#0a0807] p-4 rounded-xl border border-[#c9a96a]/20">
                   <p className="text-[#e8c98a] font-semibold text-lg text-center">📦 Perfume Original</p>
                   <p className="text-[#c9a96a]/80 text-sm text-center mt-1">
-                    Produto disponível sob encomenda.
+                    {outOfStock ? 'Produto em reposição. Disponível em breve!' : 'Produto disponível sob encomenda.'}
                   </p>
-                  <p className="text-[#c9a96a]/60 text-xs text-center mt-2">*Consulte preço e disponibilidade via WhatsApp.</p>
+                  <p className="text-[#c9a96a]/60 text-xs text-center mt-2">
+                    {outOfStock ? '*Aguardando nova reposição do estoque.' : '*Consulte preço e disponibilidade via WhatsApp.'}
+                  </p>
                   <button onClick={handleWhatsAppEncomenda} className="mt-4 w-full py-3 bg-gradient-to-r from-[#c9a96a] to-[#e8c98a] text-black rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2">
-                    ENCOMENDAR PELO WHATSAPP
+                    {outOfStock ? '📢 SABER MAIS' : 'ENCOMENDAR PELO WHATSAPP'}
                   </button>
                 </div>
               )}
@@ -1494,6 +1537,10 @@ function App() {
 
   const addToCart = async (product, price, size, quantity) => {
     if (!user) return;
+    if (isOutOfStock(product.name)) {
+      toast.error('Este produto está em reposição e não pode ser adicionado ao carrinho');
+      return;
+    }
     const result = await addToCartDB(user.uid, product.id, product.name, product.image, price, size, quantity);
     if (result.success) {
       await loadCart(user.uid);
@@ -1615,6 +1662,10 @@ function App() {
     if (selectedPerfumes.find(p => p.id === product.id)) { 
       toast.info(product.name + ' já está no seu kit!'); 
       return false; 
+    }
+    if (isOutOfStock(product.name)) {
+      toast.error('Este produto está em reposição e não pode ser adicionado ao kit');
+      return false;
     }
     setSelectedPerfumes([...selectedPerfumes, { id: product.id, name: product.name, image: product.image, size: kitSize }]);
     toast.success(product.name + ' adicionado ao kit! (' + (selectedPerfumes.length + 1) + '/10)');
