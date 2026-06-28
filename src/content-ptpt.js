@@ -109,9 +109,7 @@ export const masculine = {
     { id: 4, name: "Lattafa Asad Man 100ml", price: "39,99 €", image: "/images/Lattafa - Asad.png", hoverImage: "/images/Lattafa - Asad.png", brandLogo: "/images/logolattafa.png", tagline: "Revele a sua força", fullDescription: "Lattafa Asad Man Eau de Parfum 100ml.", fragranceType: "Gourmet Picante", bestFor: "Tempo frio", launchYear: "2021", inspiration: "Inspirado em Sauvage Elixir", notes: { topo: "Pimenta Negra, Tabaco, Abacaxi", coracao: "Patchouli, Café, Íris", base: "Baunilha, Âmbar, Madeira seca, Benjoim, Ládano" }, sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 39.99 }], sku: "6291108735411", ean: "6291108735411", rating: 4, reviews: 9 },
     { id: 5, name: "Lattafa Asad Bourbon 100ml", price: "39,90 €", image: "/images/Lattafa - Asad Bourbon.png", hoverImage: "/images/Lattafa - Asad Bourbon.png", brandLogo: "/images/logolattafa.png", tagline: "Intensidade e sofisticação", fullDescription: "Lattafa Asad Bourbon – Perfume Masculino 100ml.", fragranceType: "Amadeirado Gourmand", bestFor: "Noites especiais", launchYear: "2024", inspiration: "Edição premium", notes: { topo: "Canela, Pimenta Preta, Tabaco", coracao: "Baunilha, Oud, Âmbar", base: "Fava Tonka, Couro, Patchouli" }, sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 39.90 }], sku: "6290362340362", ean: "6290362340362", rating: 5, reviews: 7 },
     { id: 6, name: "Armaf Club de Nuit Intense Man", price: "82,99 €", image: "/images/Armaf - Club de Nuit Intense Man.png", hoverImage: "/images/Armaf - Club de Nuit Intense Man.png", brandLogo: null, tagline: "O clássico moderno", fullDescription: "Armaf Club de Nuit Intense Man.", fragranceType: "Cítrico Amadeirado", bestFor: "Uso diário", launchYear: "2015", inspiration: "Inspirado em Creed Aventus", notes: { topo: "Limão, Maçã Verde, Bergamota", coracao: "Jasmin, Rosa, Pimenta", base: "Âmbar, Patchouli, Musgo, Baunilha" }, sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "105ml", price: 82.99 }], sku: "6291108735432", ean: "6291108735432", rating: 5, reviews: 12 },
-    // ============ CORRIGIDO: Lattafa Fakhar Black (id:7) ============
     { id: 7, name: "Lattafa Fakhar Black 100ml", price: "42,99 €", image: "/images/Fakhar_Black.png", hoverImage: "/images/Fakhar_Black1.png", brandLogo: "/images/logolattafa.png", tagline: "Elegância contemporânea", fullDescription: "Lattafa Fakhar Black - Fragrância sofisticada.", fragranceType: "Aromático Fougere", bestFor: "Uso diário", launchYear: "2020", inspiration: "Fragrância original", notes: { topo: "Gengibre, Maçã, Bergamota", coracao: "Lavanda, Gerânio, Sálvia", base: "Cedro, Âmbar, Patchouli" }, sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 42.99 }], sku: "6291108735433", ean: "6291108735433", rating: 4, reviews: 15 },
-    // ============ CORRIGIDO: Liquid Brun French Avenue (id:8) ============
     { id: 8, name: "Liquid Brun French Avenue 100ml", price: "42,99 €", image: "/images/Lattafa_Fakhar_Black.png", hoverImage: "/images/Lattafa_Fakhar_Black.png", brandLogo: null, tagline: "Elegância e sofisticação", fullDescription: "Liquid Brun French Avenue - Fragrância sofisticada.", fragranceType: "Aromático Fougere", bestFor: "Uso diário", launchYear: "2020", inspiration: "Fragrância original", notes: { topo: "Gengibre, Maçã, Bergamota", coracao: "Lavanda, Gerânio, Sálvia", base: "Cedro, Âmbar, Patchouli" }, sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 42.99 }], sku: "6291108735434", ean: "6291108735434", rating: 4, reviews: 10 },
     { id: 9, name: "Afnan 9 PM Eau de Parfum 100ml", price: "54,90 €", image: "/images/Afnan_9PM_1.png", hoverImage: "/images/Afnan_9PM_2.png", brandLogo: null, tagline: "Âmbar e baunilha", fullDescription: "Afnan 9PM.", fragranceType: "Âmbar Baunilha", bestFor: "Uso diário", launchYear: "2020", inspiration: "Fragrância original Afnan", notes: { topo: "Maçã, Canela, Lavanda, Bergamota", coracao: "Flor de Laranjeira, Lírio", base: "Baunilha, Fava Tonka, Âmbar, Patchouli" }, sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 54.90 }], sku: "6290171002338", ean: "6290171002338", rating: 5, reviews: 1 },
     { id: 10, name: "Lattafa Asad Elixir 100ml", price: "52,99 €", image: "/images/Lattafa_Asad_Elixir_1.png", hoverImage: "/images/Lattafa_Asad_Elixir_2.png", brandLogo: "/images/logolattafa.png", tagline: "A expressão máxima do poder masculino", fullDescription: "Lattafa Asad Elixir.", fragranceType: "Oriental Amadeirado", bestFor: "Dias frios", launchYear: "2024", inspiration: "Fragrância original Lattafa", notes: { topo: "Pimenta Rosa, Açafrão, Toranja", coracao: "Madeira de Cedro, Nicotiana, Baunilha", base: "Cashmeran, Olíbano, Patchouli, Âmbar" }, sizes: [{ size: "3ml", image: "/images/decant.png" }, { size: "5ml", image: "/images/decant1.png" }, { size: "100ml", price: 52.99 }], sku: "6291108735436", ean: "6291108735436", rating: 5, reviews: 2 },
@@ -486,9 +484,27 @@ export const newsletter = {
 
 export const footer = {
   columns: [
-    { title: "LOJA", links: ["Ver tudo", "Novidades", "Mais vendidos", "Para Ela", "Para Ele", "Unissex", "Desodorizantes"] },
-    { title: "AJUDA", links: ["Portes e entregas", "Trocas e devoluções", "FAQ", "Fale connosco"] },
-    { title: "INSTITUCIONAL", links: ["Sobre a Noraya", "Política de privacidade", "Termos de uso"] }
+    { 
+      title: "LOJA", 
+      links: ["Ver tudo", "Novidades", "Mais vendidos", "Para Ela", "Para Ele", "Unissex", "Desodorizantes"] 
+    },
+    { 
+      title: "AJUDA", 
+      links: [
+        "Portes e entregas",
+        "Trocas e devoluções",
+        "FAQ",
+        "Fale connosco"
+      ] 
+    },
+    { 
+      title: "INSTITUCIONAL", 
+      links: [
+        "Sobre a Noraya",
+        "Política de privacidade",
+        "Termos de uso"
+      ] 
+    }
   ],
   copyright: "© 2026 NORAYA — Perfumes Árabes. Todos os direitos reservados."
 };

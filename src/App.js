@@ -1410,14 +1410,53 @@ const Newsletter = () => {
 // =============================================
 const Footer = () => {
   if (!content?.footer) return null;
+  
+  // Mapeia os links para URLs
+  const linkMap = {
+    "Portes e entregas": "/portes-entregas.html",
+    "Trocas e devoluções": "/trocas-devolucoes.html",
+    "FAQ": "/faq.html",
+    "Fale connosco": "/fale-conosco.html",
+    "Política de privacidade": "/politica-privacidade.html",
+    "Termos de uso": "/termos-uso.html",
+  };
+  
   return (
     <footer className="bg-[#050403] text-[#c9a96a]/80 py-20 border-t border-[#c9a96a]/15">
       <div className="max-w-[1440px] mx-auto px-6 lg:px-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-14">
-          <div><img src={content.brand.logo} alt="Noraya" className="h-20 w-20 object-contain mb-4" /><div className="font-display tracking-[0.25em] text-[#e8c98a] text-xl">{content.brand.name}</div><div className="text-[10px] tracking-[0.3em] text-[#c9a96a]/60 mt-1">{content.brand.tagline}</div></div>
-          {content.footer.columns?.map((c) => (<div key={c.title}><h4 className="text-[#e8c98a] tracking-[0.3em] text-xs mb-5">{c.title}</h4><ul className="space-y-3 text-sm font-light">{c.links.map((l) => (<li key={l}><a href="#" className="hover:text-[#e8c98a] transition-colors">{l}</a></li>))}</ul></div>))}
+          <div>
+            <img src={content.brand.logo} alt="Noraya" className="h-20 w-20 object-contain mb-4" />
+            <div className="font-display tracking-[0.25em] text-[#e8c98a] text-xl">{content.brand.name}</div>
+            <div className="text-[10px] tracking-[0.3em] text-[#c9a96a]/60 mt-1">{content.brand.tagline}</div>
+          </div>
+          {content.footer.columns?.map((c) => (
+            <div key={c.title}>
+              <h4 className="text-[#e8c98a] tracking-[0.3em] text-xs mb-5">{c.title}</h4>
+              <ul className="space-y-3 text-sm font-light">
+                {c.links.map((l) => {
+                  const href = linkMap[l] || "#";
+                  const isExternal = href.startsWith("http") || href.startsWith("/") && href.endsWith(".html");
+                  return (
+                    <li key={l}>
+                      <a 
+                        href={href} 
+                        className="hover:text-[#e8c98a] transition-colors"
+                        target={isExternal ? "_blank" : undefined}
+                        rel={isExternal ? "noopener noreferrer" : undefined}
+                      >
+                        {l}
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
         </div>
-        <div className="pt-8 border-t border-[#c9a96a]/15 text-xs text-center tracking-wider">{content.footer.copyright}</div>
+        <div className="pt-8 border-t border-[#c9a96a]/15 text-xs text-center tracking-wider">
+          {content.footer.copyright}
+        </div>
       </div>
     </footer>
   );
