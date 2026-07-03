@@ -56,7 +56,7 @@ const isOutOfStock = (productName) => {
   return false;
 };
 
-// Mapeamento de preços por nome de produto (ATUALIZADO)
+// Mapeamento de preços por nome de produto
 const PRODUCT_PRICES = {
   // ============ PARA ELA (Femininos) ============
   'Lattafa Yara Rosa 100ml': 39.99,
@@ -779,7 +779,7 @@ const MyReviewsPage = () => {
 };
 
 // =============================================
-// PRODUCT DETAIL
+// PRODUCT DETAIL (ATUALIZADO - BOTÕES PRETOS)
 // =============================================
 const ProductDetail = () => {
   const { category, id } = useParams();
@@ -1080,25 +1080,25 @@ const ProductDetail = () => {
                   <div className="flex gap-3 flex-wrap">
                     <button 
                       onClick={() => setSelectedSize('2ml')} 
-                      className={`px-5 py-2.5 rounded-lg border-2 transition-all ${selectedSize === '2ml' ? 'border-[#c9a96a] bg-[#f7f3ec] text-[#c9a96a] font-semibold shadow-md' : 'border-gray-300 hover:border-[#c9a96a]/50'}`}
+                      className={`px-5 py-2.5 rounded-lg border-2 transition-all text-black ${selectedSize === '2ml' ? 'border-[#c9a96a] bg-[#f7f3ec] font-semibold shadow-md' : 'border-gray-300 hover:border-[#c9a96a]/50'}`}
                     >
                       2ml - Decant (Kit 10un)
                     </button>
                     <button 
                       onClick={() => setSelectedSize('3ml')} 
-                      className={`px-5 py-2.5 rounded-lg border-2 transition-all ${selectedSize === '3ml' ? 'border-[#c9a96a] bg-[#f7f3ec] text-[#c9a96a] font-semibold shadow-md' : 'border-gray-300 hover:border-[#c9a96a]/50'}`}
+                      className={`px-5 py-2.5 rounded-lg border-2 transition-all text-black ${selectedSize === '3ml' ? 'border-[#c9a96a] bg-[#f7f3ec] font-semibold shadow-md' : 'border-gray-300 hover:border-[#c9a96a]/50'}`}
                     >
                       3ml - Decant (Kit 10un)
                     </button>
                     <button 
                       onClick={() => setSelectedSize('5ml')} 
-                      className={`px-5 py-2.5 rounded-lg border-2 transition-all ${selectedSize === '5ml' ? 'border-[#c9a96a] bg-[#f7f3ec] text-[#c9a96a] font-semibold shadow-md' : 'border-gray-300 hover:border-[#c9a96a]/50'}`}
+                      className={`px-5 py-2.5 rounded-lg border-2 transition-all text-black ${selectedSize === '5ml' ? 'border-[#c9a96a] bg-[#f7f3ec] font-semibold shadow-md' : 'border-gray-300 hover:border-[#c9a96a]/50'}`}
                     >
                       5ml - Decant (Kit 10un)
                     </button>
                     <button 
                       onClick={() => setSelectedSize('10ml')} 
-                      className={`px-5 py-2.5 rounded-lg border-2 transition-all ${selectedSize === '10ml' ? 'border-[#c9a96a] bg-[#f7f3ec] text-[#c9a96a] font-semibold shadow-md' : 'border-gray-300 hover:border-[#c9a96a]/50'}`}
+                      className={`px-5 py-2.5 rounded-lg border-2 transition-all text-black ${selectedSize === '10ml' ? 'border-[#c9a96a] bg-[#f7f3ec] font-semibold shadow-md' : 'border-gray-300 hover:border-[#c9a96a]/50'}`}
                     >
                       10ml - Decant (Kit 10un)
                     </button>
@@ -1156,12 +1156,9 @@ const ProductDetail = () => {
               {/* Seção do Produto Original - apenas para perfumes */}
               {product.category !== 'desodorizantes' && (
                 <div className="bg-gradient-to-r from-[#1a1410] to-[#0a0807] p-4 rounded-xl border border-[#c9a96a]/20">
-                  <p className="text-[#e8c98a] font-semibold text-lg text-center">📦 Perfume Original</p>
+                  <p className="text-[#e8c98a] font-semibold text-lg text-center">📦 Perfume Original 100 ml</p>
                   <p className="text-[#c9a96a]/80 text-sm text-center mt-1">
                     {outOfStock ? 'Produto em reposição. Disponível em breve!' : 'Produto disponível sob encomenda.'}
-                  </p>
-                  <p className="text-[#c9a96a]/60 text-xs text-center mt-2">
-                    {outOfStock ? '*Aguardando nova reposição do estoque.' : '*Consulte preço e disponibilidade via WhatsApp.'}
                   </p>
                   <button onClick={handleWhatsAppEncomenda} className="mt-4 w-full py-3 bg-gradient-to-r from-[#c9a96a] to-[#e8c98a] text-black rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2">
                     {outOfStock ? '📢 SABER MAIS' : 'ENCOMENDAR PELO WHATSAPP'}
@@ -1411,12 +1408,12 @@ const Newsletter = () => {
 const Footer = () => {
   if (!content?.footer) return null;
   
-  // Mapeia os links para URLs
   const linkMap = {
     "Portes e entregas": "/portes-entregas.html",
     "Trocas e devoluções": "/trocas-devolucoes.html",
     "FAQ": "/faq.html",
     "Fale connosco": "/fale-conosco.html",
+    "Sobre a Noraya": "/sobre-noraya.html",
     "Política de privacidade": "/politica-privacidade.html",
     "Termos de uso": "/termos-uso.html",
   };
